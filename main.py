@@ -87,8 +87,8 @@ def editar_aceitar():
 
         valor = gui.uiEditar.valorDoubleSpinBox.value()
         unidade = gui.uiEditar.unidadeLineEdit.text()
-        contavel = bool(gui.uiEditar.contCheckBox.checkState())
-        mensuravel = bool(gui.uiEditar.mensCheckBox.checkState())
+        contavel = int(bool(gui.uiEditar.contCheckBox.checkState()))
+        mensuravel = int(bool(gui.uiEditar.mensCheckBox.checkState()))
         Item.editar(item.index.item(), [nome, valor, contavel, mensuravel, unidade])
         atualizar()
 
@@ -254,8 +254,8 @@ def add_aceitar():
     if len(nome) > 1:
         valor = gui.uiAdd.valorDoubleSpinBox.value()
         unidade = gui.uiAdd.unidadeLineEdit.text()
-        contavel = bool(gui.uiAdd.contCheckBox.checkState())
-        mensuravel = bool(gui.uiAdd.mensCheckBox.checkState())
+        contavel = int(bool(gui.uiAdd.contCheckBox.checkState()))
+        mensuravel = int(bool(gui.uiAdd.mensCheckBox.checkState()))
         Item.adicionar([nome, valor, contavel, mensuravel, unidade])
         atualizar()
         gui.wAdd.hide()
