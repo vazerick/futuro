@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime
+from os import path, mkdir
 
 from pandas import isna
 
@@ -340,6 +341,9 @@ gui = Gui()
 gui.uiHistorico.botaoExcluir.hide()
 
 modo = 0
+
+if not path.exists("data"):
+    mkdir("data")
 
 try:
     with open("data/config.ini", "r") as arquivo:
