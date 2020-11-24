@@ -63,11 +63,11 @@ def botao_editar():
         gui.uiEditar.nomeLineEdit.setText(nome)
         gui.uiEditar.unidadeLineEdit.setText(unidade)
         gui.uiEditar.valorDoubleSpinBox.setValue(valor)
-        if bool(mensuravel):
+        if int(mensuravel):
             gui.uiEditar.mensCheckBox.setCheckState(2)
         else:
             gui.uiEditar.mensCheckBox.setCheckState(0)
-        if bool(contavel):
+        if int(contavel):
             gui.uiEditar.contCheckBox.setCheckState(2)
         else:
             gui.uiEditar.contCheckBox.setCheckState(0)
@@ -194,7 +194,7 @@ def botao_feito():
         gui.uiEntrada.valorDoubleSpinBox.setValue(valor)
         gui.uiEntrada.unidadeDoubleSpinBox.setValue(1)
         gui.uiEntrada.quantiaSpinBox.setValue(1)
-        if bool(mensuravel):
+        if int(mensuravel):
             gui.uiEntrada.label.setEnabled(True)
             gui.uiEntrada.unidadeLabel.setEnabled(True)
             gui.uiEntrada.unidadeDoubleSpinBox.setEnabled(True)
@@ -203,7 +203,7 @@ def botao_feito():
             gui.uiEntrada.label.setEnabled(False)
             gui.uiEntrada.unidadeLabel.setEnabled(False)
             gui.uiEntrada.unidadeDoubleSpinBox.setEnabled(False)
-        if bool(contavel):
+        if int(contavel):
             gui.uiEntrada.quantiaLabel.setEnabled(True)
             gui.uiEntrada.quantiaSpinBox.setEnabled(True)
         else:
