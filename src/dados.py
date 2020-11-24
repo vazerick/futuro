@@ -26,11 +26,19 @@ class Dados:
             self.tabela = pd.DataFrame(columns=self.colunas)
             self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')
 
+
+    def atualizar(self):
+        self.tabela = pd.read_csv(self.endereco, quotechar="'", index_col='id')
+
+
     def adicionar(self, linha):
+        indice = self.tabela.index.max()+1
+        if pd.isna(indice):
+            indice = 0
         add = pd.DataFrame(
             [linha],
             columns=self.colunas,
-            index=[self.tabela.index.max()+1]
+            index=[indice]
         )
         self.tabela = self.tabela.append(add, ignore_index=False, sort=False)
         self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')

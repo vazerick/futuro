@@ -15,7 +15,9 @@ selecionado = -1
 def atualizar():
     gui.ui.tableWidget.currentItemChanged.disconnect()
     gui.ui.graficoBarra_2.limpa()
-    Previsao.atualizar(Entrada.tabela)
+    Entrada.atualizar()
+    Item.atualizar()
+    Previsao.atualizar(Entrada.tabela, Item.tabela)
     Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela)
     gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)
     # gui.ui.tableWidget.setCurrentCell(selecionado+1, 0)
@@ -276,39 +278,35 @@ def tabela_seleciona(item):
         item = item.index.values[0]
 
         ultimo = gui.ui.tableWidget.item(linha, 1).text()
-        data_ultimo = datetime.strptime(ultimo, "%d/%m/%y")
 
         print("ID:\n", item)
         print("UNIDADE:\n", unidade)
         info = Entrada.tabela[Entrada.tabela["item"] == item]
-        info = info[info["data"] == ultimo]
+        if len(info):
+            info = info[info["data"] == ultimo]
 
-        print(info)
+            vezes = info["quantia"].item()
+            unidades = info["unidade"].item()
 
-        vezes = info["quantia"].item()
-        unidades = info["unidade"].item()
+            if vezes > 1:
+                vezes = " " + str(vezes) + " x"
+            else:
+                vezes = ""
 
-        print("VEZES:\n", vezes)
-        if vezes > 1:
-            vezes = " " + str(vezes) + " x"
-        else:
-            vezes = ""
-        print("VEZES:\n", vezes)
+            if isna(unidade):
+                unidades = ""
+            else:
+                unidades = str(unidades)
+                unidades = unidades.replace(".", ",")
+                unidades = unidades.replace(",0", "")
+                unidades = " " + unidades + unidade
 
-        if isna(unidade):
-            unidades = ""
-        else:
-            unidades = str(unidades)
-            unidades = unidades.replace(".", ",")
-            unidades = unidades.replace(",0", "")
-            unidades = " " + unidades + unidade
-
-        ultimo = ultimo + "\t" + vezes + unidades
-
-        gui.ui.labelUltimo.setText(ultimo)
         prox = gui.ui.tableWidget.item(linha, 2).text()
 
         if prox != "Sem previsão":
+            data_ultimo = datetime.strptime(ultimo, "%d/%m/%y")
+            ultimo = ultimo + "\t" + vezes + unidades
+            gui.ui.labelUltimo.setText(ultimo)
             entradas = Previsao.previsao[Previsao.previsao["item"] == item]
             print("Selecionado:\n",  entradas)
             entradas = list(entradas["dias"])
@@ -321,6 +319,7 @@ def tabela_seleciona(item):
             print("Tempo:\n",  dias)
             gui.ui.graficoBarra_2.plot(dias, entradas)
         else:
+            gui.ui.labelUltimo.setText(ultimo)
             gui.ui.graficoBarra_2.limpa()
         gui.ui.graficoBarra_2.show()
 

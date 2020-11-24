@@ -40,7 +40,10 @@ class Tabela:
                 valor = "R${:.2f}".format(float(row["valor"])).replace(".", ",")
                 ultimo = historico["data"].max()
                 vezes = historico[historico["data"] == ultimo]["vezes"].item()
-                freq = previsao[previsao["id_item"] == index]["freq"].item()
+                if len(previsao[previsao["id_item"] == index]):
+                    freq = previsao[previsao["id_item"] == index]["freq"].item()
+                else:
+                    freq = pd.NA
 
                 if pd.isna(freq):
                     linha = [

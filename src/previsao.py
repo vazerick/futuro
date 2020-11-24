@@ -9,18 +9,17 @@ class Previsao:
 
     def __init__(self, item, entrada, modo):
         self.modo = modo
-        self.item = item
         self.colunas = ["id_item", "freq"]
         self.tabela = pd.DataFrame(columns=self.colunas)
         self.previsao = pd.DataFrame(columns=["item", "dias"])
-        self.atualizar(entrada)
+        self.atualizar(entrada, item)
 
-    def atualizar(self, entrada):
+    def atualizar(self, entrada, item):
         print(self.modo)
         self.tabela = self.tabela.iloc[0:0]
         self.previsao = self.previsao.iloc[0:0]
         # lê cada item
-        for index, row in self.item.iterrows():
+        for index, row in item.iterrows():
             # cria uma cópia das entradas do item
             entradas = entrada[entrada["item"] == index].copy()
             if len(entradas):
@@ -86,5 +85,5 @@ class Previsao:
                     columns=self.colunas
                 )
             self.tabela = self.tabela.append(linha, ignore_index=True, sort=False)
-
+        print("!!!!ZZZZZz\n", self.tabela)
 
