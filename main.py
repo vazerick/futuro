@@ -160,6 +160,7 @@ def excluir_aceitar():
     for i in entradas:
         Entrada.excluir(i)
     Item.excluir(id_selecionado)
+    selecionado = 0
     atualizar()
 
 
