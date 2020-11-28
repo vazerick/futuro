@@ -18,7 +18,6 @@ class Gui:
 
     def __init__(self):
 # declarações da interface gráfica
-        print("Gerando a interface gráfica")
 
         self.app = QApplication(sys.argv)
 

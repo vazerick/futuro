@@ -18,7 +18,7 @@ def atualizar():
     Entrada.atualizar()
     Item.atualizar()
     Previsao.atualizar(Entrada.tabela, Item.tabela)
-    Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela)
+    Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela)
     gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)
     # gui.ui.tableWidget.setCurrentCell(selecionado+1, 0)
     gui.ui.tableWidget.setCurrentCell(0, 0)
@@ -134,15 +134,6 @@ def historico_aceitar():
         # item = gui.ui.tableWidget.item(selecionado, 0).text()
         # item = Item.tabela[Item.tabela["nome"] == item]
         # id_selecionado = item.index.item()
-        print(
-            Entrada.tabela.loc[id_item]["item"],
-            [
-                id_item,
-                quantia,
-                unidade,
-                data,
-            ]
-        )
         Entrada.editar(
             id_item,
             [
@@ -245,6 +236,12 @@ def entrada_aceitar():
         unidade,
         data
     ])
+
+    estoque = Estoque.tabela[Estoque.tabela["item"] == item]
+    if len(estoque) > 0:
+        id_estoque = (estoque.index.item())
+        Estoque.reduz_estoque(id_estoque)
+
     atualizar()
 
 
@@ -279,9 +276,15 @@ def tabela_seleciona(item):
 
         ultimo = gui.ui.tableWidget.item(linha, 1).text()
 
-        print("ID:\n", item)
-        print("UNIDADE:\n", unidade)
         info = Entrada.tabela[Entrada.tabela["item"] == item]
+
+        estoque = Estoque.tabela[Estoque.tabela["item"] == item]
+        if len(estoque):
+            estoque = estoque["quantia"].item()
+        else:
+            estoque = 0
+        gui.ui.spinBox.setValue(estoque)
+
         if len(info):
             info = info[info["data"] == ultimo]
 
@@ -308,7 +311,6 @@ def tabela_seleciona(item):
             ultimo = ultimo + "\t" + vezes + unidades
             gui.ui.labelUltimo.setText(ultimo)
             entradas = Previsao.previsao[Previsao.previsao["item"] == item]
-            print("Selecionado:\n",  entradas)
             entradas = list(entradas["dias"])
             gui.ui.graficoBarra_2.limpa()
             hoje = datetime.now()
@@ -316,7 +318,6 @@ def tabela_seleciona(item):
             data_prox = datetime.strptime(prox, "%d/%m/%y")
             entradas = entradas + [(hoje-data_ultimo).days]
             dias = (data_prox-data_ultimo).days
-            print("Tempo:\n",  dias)
             gui.ui.graficoBarra_2.plot(dias, entradas)
         else:
             gui.ui.labelUltimo.setText(ultimo)
@@ -324,11 +325,45 @@ def tabela_seleciona(item):
         gui.ui.graficoBarra_2.show()
 
 
+def botao_estoque():
+    global selecionado
+    if selecionado >= 0:
+        item = gui.ui.tableWidget.item(selecionado, 0).text()
+        item = Item.tabela[Item.tabela["nome"] == item]
+        id_item = (item.index.item())
+        estoque = Estoque.tabela[Estoque.tabela["item"] == id_item]
+        quantia_nova = gui.ui.spinBox.value()
+        if len(estoque) > 0:
+            id_estoque = (estoque.index.item())
+            quantia = estoque["quantia"].item()
+            if quantia_nova != quantia:
+                if quantia_nova > 0:
+                    Estoque.editar(
+                        id_estoque,
+                        [
+                            id_item,
+                            quantia_nova
+                        ]
+                    )
+                    atualizar()
+                else:
+                    Estoque.excluir(id_estoque)
+                    atualizar()
+        else:
+            quantia = 0
+            if quantia_nova > 0:
+                Estoque.adicionar(
+                    [
+                        id_item,
+                        quantia_nova
+                    ]
+                )
+                atualizar()
+
+
 def seleciona_modo():
     global modo
-    print("Seleciona Modo")
     modo = gui.ui.modoComboBox.currentIndex()
-    print(modo)
     with open("data/config.ini", "w") as arquivo:
         arquivo.write(str(modo))
         arquivo.close()
@@ -361,10 +396,13 @@ Item = Dados("item",
 Entrada = Dados("entrada",
                 ['item', 'quantia', 'unidade', 'data']
                 )
+Estoque = Dados("estoque",
+                ['item', 'quantia']
+                )
 
 Previsao = Previsao(Item.tabela, Entrada.tabela, modo)
 
-Tabela = Tabela(gui.ui.tableWidget, Item.tabela, Entrada.tabela, Previsao.tabela, gui.ui.labelFundo, gui.ui.labelMes)
+Tabela = Tabela(gui.ui.tableWidget, Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, gui.ui.labelFundo, gui.ui.labelMes)
 
 Historico = TabelaHistorico(gui.uiHistorico.tableWidget)
 
@@ -375,11 +413,13 @@ gui.ui.botaoEditar.clicked.connect(botao_editar)
 gui.ui.botaoFeito.clicked.connect(botao_feito)
 gui.ui.botaoExcluir.clicked.connect(botao_excluir)
 gui.ui.botaoHistorico.clicked.connect(botao_historico)
+gui.ui.botaoEstoque.clicked.connect(botao_estoque)
 gui.uiAdd.buttonBox.accepted.connect(add_aceitar)
 gui.uiEntrada.buttonBox.accepted.connect(entrada_aceitar)
 gui.uiEditar.buttonBox.accepted.connect(editar_aceitar)
 gui.uiExcluir.buttonBox.accepted.connect(excluir_aceitar)
 gui.uiHistorico.buttonBox.accepted.connect(historico_aceitar)
+
 
 #definições dos sinais
 gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)

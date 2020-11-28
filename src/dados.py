@@ -17,11 +17,11 @@ class Dados:
 
         self.endereco = 'data/' + self.nome + ".csv"
 
-        print("Abrindo o arquivo ", self.endereco)
-
         # abre a tabela, ou cria caso não exista
         try:
             self.tabela = pd.read_csv(self.endereco, quotechar="'", index_col='id')
+            self.tabela = self.tabela.drop_duplicates()
+            print(self.tabela)
         except FileNotFoundError:
             self.tabela = pd.DataFrame(columns=self.colunas)
             self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')
@@ -29,7 +29,7 @@ class Dados:
 
     def atualizar(self):
         self.tabela = pd.read_csv(self.endereco, quotechar="'", index_col='id')
-
+        self.tabela = self.tabela.drop_duplicates()
 
     def adicionar(self, linha):
         indice = self.tabela.index.max()+1
@@ -43,9 +43,15 @@ class Dados:
         self.tabela = self.tabela.append(add, ignore_index=False, sort=False)
         self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')
 
+    def reduz_estoque(self, id):
+        if self.tabela.loc[id]["quantia"] > 1:
+            self.tabela.loc[id]["quantia"] -= 1
+            self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')
+        else:
+            self.excluir(id)
+
     def editar(self, id, linha):
         self.tabela.loc[id] = linha
-        print(id, linha)
         self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')
 
     def excluir(self, id):

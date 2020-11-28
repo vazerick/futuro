@@ -15,7 +15,6 @@ class Previsao:
         self.atualizar(entrada, item)
 
     def atualizar(self, entrada, item):
-        print(self.modo)
         self.tabela = self.tabela.iloc[0:0]
         self.previsao = self.previsao.iloc[0:0]
         # lê cada item
@@ -34,50 +33,43 @@ class Previsao:
                 entradas["vezes"] = entradas.apply(lambda row: row["quantia"] * row["unidade"], axis=1)
                 entradas["fator"] = entradas.apply(lambda row: row["dias"] / row["vezes"], axis=1)
                 entradas = entradas.sort_values(by=["data"], ascending=True)
-                print("Cálculo", entradas)
                 self.previsao = self.previsao.append(entradas[entradas["dias"] > 0][["item", "dias"]])
 
                 if self.modo == 3 and len(entradas) > 0:
-                    print("Ponderada")
                     entradas["peso"] = list(range(1, len(entradas)))+[0]
-                    print(entradas)
                     total = entradas["peso"].sum()
                     entradas["fator"] = entradas.apply(lambda row: row["peso"] * row["fator"], axis=1)
                     entradas = entradas[entradas["fator"] > 0]["fator"]
-                    print(entradas)
-                    linha = pd.DataFrame(
-                        [[index, entradas.sum()/total]],
-                        columns=self.colunas
-                    )
-                    print("Linha:\n", linha)
+                    if total > 0:
+                        linha = pd.DataFrame(
+                            [[index, entradas.sum()/total]],
+                            columns=self.colunas
+                        )
+                    else:
+                        linha = pd.DataFrame(
+                            [[index, None]],
+                            columns=self.colunas
+                        )
                 else:
-                    print("Não ponderada")
                     entradas = entradas[entradas["fator"] > 0]["fator"]
-                    print(entradas)
 
                     if self.modo == 1 and len(entradas) > 4:
-                        print("Cortar limites")
                         i = int(len(entradas)/6)+1
                         entradas = entradas.drop(entradas.nlargest(i, keep='first').index)
                         entradas = entradas.drop(entradas.nsmallest(i, keep='first').index)
-                        print(entradas)
 
                     # adiciona na tabela a frequência média
 
                     if self.modo == 2:
-                        print("Mediana")
                         linha = pd.DataFrame(
                             [[index, entradas.median(axis=0)]],
                             columns=self.colunas
                         )
-                        print(linha)
                     else:
-                        print("Média")
                         linha = pd.DataFrame(
                             [[index, entradas.mean()]],
                             columns=self.colunas
                         )
-                        print(linha)
 
             else:
                 linha = pd.DataFrame(
@@ -85,5 +77,4 @@ class Previsao:
                     columns=self.colunas
                 )
             self.tabela = self.tabela.append(linha, ignore_index=True, sort=False)
-        print("!!!!ZZZZZz\n", self.tabela)
 

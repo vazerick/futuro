@@ -7,15 +7,16 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 class Tabela:
 
-    def __init__(self, widget, item, entrada, previsao, fundo, mes):
+    def __init__(self, widget, item, entrada, previsao, estoque, fundo, mes):
 
         self.widget = widget
         self.labelFundo = fundo.setText
         self.labelMes = mes.setText
-        self.atualiza(item, entrada, previsao)
+        self.atualiza(item, entrada, previsao, estoque)
 
-    def atualiza(self, item, entrada, previsao):
+    def atualiza(self, item, entrada, previsao, estoque):
         #limpa a tabela
+        print(estoque)
         self.widget.clear()
         self.widget.setRowCount(0)
         self.widget.setColumnCount(5)
@@ -58,6 +59,8 @@ class Tabela:
                     sem_prev = sem_prev.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
                 else:
                     tempo = round(vezes*freq)
+                    if tempo == 0:
+                        tempo = 1
                     prev = ultimo + timedelta(days=tempo)
                     mensal_int = ((row["valor"]/timedelta(days=tempo).days)*30)
                     mensal_int = round(mensal_int/5, 0)*5
@@ -98,8 +101,11 @@ class Tabela:
         for index, row in tabela.iterrows():
             font = QFont()
             if row["prev"] < datetime.today() + timedelta(days=30):
-                font.setBold(True)
-                mes = mes + float(row["valor"].replace("R$", "").replace(",", "."))
+                id_item = item[item["nome"] == row["nome"]].index.item()
+                quantia_estoque = estoque[estoque["item"] == id_item]
+                if len(quantia_estoque) < 1:
+                    font.setBold(True)
+                    mes = mes + float(row["valor"].replace("R$", "").replace(",", "."))
             else:
                 font.setBold(False)
             row["prev"] = row["prev"].strftime("%d/%m/%y")
@@ -110,9 +116,9 @@ class Tabela:
                 [3, "valor"],
                 [4, "mensal"]
             ]:
-                item = QTableWidgetItem(row[nome])
-                item.setFont(font)
-                self.widget.setItem(linha, i, item)
+                tabela_item = QTableWidgetItem(row[nome])
+                tabela_item.setFont(font)
+                self.widget.setItem(linha, i, tabela_item)
                 # self.widget.item(linha, i)
             linha += 1
 
@@ -139,12 +145,12 @@ class Tabela:
                 item = QTableWidgetItem(row[nome])
                 self.widget.setItem(linha, i, item)
             linha += 1
-        print(tabela)
         fundo = tabela["mensal_int"].sum()
         mes = round(mes/5, 0)*5
         self.labelFundo("Fundo mensal: " + "R${:.2f}".format(fundo).replace(".", ","))
         self.labelMes("Próximos gastos: " + "R${:.2f}".format(mes).replace(".", ","))
         # self.labelMes(str(mes))
+
 
 class TabelaHistorico:
 
@@ -154,7 +160,6 @@ class TabelaHistorico:
         self.widget = widget
 
     def atualiza(self, item, entrada):
-        print(entrada)
         self.widget.clear()
         self.widget.setRowCount(0)
         self.widget.setColumnCount(3)
@@ -175,7 +180,6 @@ class TabelaHistorico:
                 [1, "quantia"],
                 [2, "unidade"],
             ]:
-                print(linha, i, row[nome])
                 item = QTableWidgetItem(str(row[nome]))
                 self.widget.setItem(linha, i, item)
             linha += 1
@@ -208,7 +212,6 @@ class TabelaHistorico:
                 self.widget.item(linha, coluna).setText(str(novo))
             except:
                 self.widget.item(linha, coluna).setText(str(original))
-        print("Atualiza:")
-        print(linha, coluna)
-        print("Original:", original)
-        print("Novo:", novo)
+
+
+
