@@ -20,8 +20,9 @@ def atualizar():
     Previsao.atualizar(Entrada.tabela, Item.tabela)
     Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela)
     gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)
-    # gui.ui.tableWidget.setCurrentCell(selecionado+1, 0)
+    temp = selecionado
     gui.ui.tableWidget.setCurrentCell(0, 0)
+    gui.ui.tableWidget.setCurrentCell(temp, 0)
 
 
 def limpar_texto(*arg):
