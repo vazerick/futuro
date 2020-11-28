@@ -22,8 +22,9 @@ class Tabela:
         self.widget.setColumnCount(5)
         mensal = ""
         mensal_int = 0
+        fator_estoque = 1
         header = ["Item", "Último", "Previsão", "Valor", "Mensal"]
-        colunas = ["nome", "ultimo", "prev", "valor", "mensal_int", "mensal"]
+        colunas = ["nome", "ultimo", "prev", "valor", "mensal_int", "mensal", "fator_estoque"]
         self.widget.setHorizontalHeaderLabels(header)
         self.widget.verticalHeader().setVisible(False)
         entrada = entrada.copy()
@@ -34,6 +35,7 @@ class Tabela:
         sem_entr = pd.DataFrame(columns=colunas)
 
         for index, row in item.iterrows():
+            fator_estoque = 1
             historico = entrada[entrada["item"] == index].copy()
             if len(historico):
                 historico["vezes"] = historico.apply(lambda row: row["quantia"]*row["unidade"], axis=1)
@@ -53,7 +55,8 @@ class Tabela:
                         "Sem previsão",
                         valor,
                         mensal_int,
-                        mensal
+                        mensal,
+                        fator_estoque
                     ]
                     self.widget.insertRow(0)
                     sem_prev = sem_prev.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
@@ -64,6 +67,14 @@ class Tabela:
                     prev = ultimo + timedelta(days=tempo)
                     mensal_int = ((row["valor"]/timedelta(days=tempo).days)*30)
                     mensal_int = round(mensal_int/5, 0)*5
+                    print("Mensal int:", mensal_int)
+                    print(row["valor"])
+                    if mensal_int > row["valor"]:
+                        fator_estoque = mensal_int/row["valor"]
+                        redondo = int(fator_estoque)
+                        if fator_estoque > redondo:
+                            redondo += 1
+                        fator_estoque = redondo
                     mensal = "R${:.0f}".format(mensal_int)
                     linha = [
                         nome,
@@ -72,7 +83,8 @@ class Tabela:
                         prev,
                         valor,
                         mensal_int,
-                        mensal
+                        mensal,
+                        fator_estoque
                     ]
 
                     self.widget.insertRow(0)
@@ -88,7 +100,8 @@ class Tabela:
                     "Sem previsão",
                     valor,
                     mensal_int,
-                    mensal
+                    mensal,
+                    fator_estoque
                 ]
                 self.widget.insertRow(0)
                 sem_entr = sem_entr.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
@@ -101,11 +114,25 @@ class Tabela:
         for index, row in tabela.iterrows():
             font = QFont()
             if row["prev"] < datetime.today() + timedelta(days=30):
-                id_item = item[item["nome"] == row["nome"]].index.item()
+                print("!!!", row)
+                temp = item[item["nome"] == row["nome"]]
+                print(temp)
+                id_item =temp.index.item()
                 quantia_estoque = estoque[estoque["item"] == id_item]
-                if len(quantia_estoque) < 1:
+                fator_estoque = row["fator_estoque"]
+                if len(quantia_estoque) > 0:
+                    quantia_estoque = quantia_estoque["quantia"].item()
+                    print("$$$", quantia_estoque)
+                    print("$$$", (quantia_estoque/fator_estoque))
+                else:
+                    quantia_estoque = 0
+                if quantia_estoque < fator_estoque:
                     font.setBold(True)
-                    mes = mes + float(row["valor"].replace("R$", "").replace(",", "."))
+                    valor = float(row["valor"].replace("R$", "").replace(",", "."))
+                    if fator_estoque > 1:
+                        valor = valor * (fator_estoque - quantia_estoque)
+                    print(valor)
+                    mes = mes + valor
             else:
                 font.setBold(False)
             row["prev"] = row["prev"].strftime("%d/%m/%y")
