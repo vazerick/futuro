@@ -7,16 +7,16 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 class Tabela:
 
-    def __init__(self, widget, item, entrada, previsao, estoque, fundo, mes):
+    def __init__(self, widget, item, entrada, previsao, estoque, fundo, mes, dif):
 
         self.widget = widget
         self.labelFundo = fundo.setText
         self.labelMes = mes.setText
+        self.labelDif = dif.setText
         self.atualiza(item, entrada, previsao, estoque)
 
     def atualiza(self, item, entrada, previsao, estoque):
         #limpa a tabela
-        print(estoque)
         self.widget.clear()
         self.widget.setRowCount(0)
         self.widget.setColumnCount(5)
@@ -67,8 +67,6 @@ class Tabela:
                     prev = ultimo + timedelta(days=tempo)
                     mensal_int = ((row["valor"]/timedelta(days=tempo).days)*30)
                     mensal_int = round(mensal_int/5, 0)*5
-                    print("Mensal int:", mensal_int)
-                    print(row["valor"])
                     if mensal_int > row["valor"]:
                         fator_estoque = mensal_int/row["valor"]
                         redondo = int(fator_estoque)
@@ -114,16 +112,12 @@ class Tabela:
         for index, row in tabela.iterrows():
             font = QFont()
             if row["prev"] < datetime.today() + timedelta(days=30):
-                print("!!!", row)
                 temp = item[item["nome"] == row["nome"]]
-                print(temp)
                 id_item =temp.index.item()
                 quantia_estoque = estoque[estoque["item"] == id_item]
                 fator_estoque = row["fator_estoque"]
                 if len(quantia_estoque) > 0:
                     quantia_estoque = quantia_estoque["quantia"].item()
-                    print("$$$", quantia_estoque)
-                    print("$$$", (quantia_estoque/fator_estoque))
                 else:
                     quantia_estoque = 0
                 if quantia_estoque < fator_estoque:
@@ -131,7 +125,6 @@ class Tabela:
                     valor = float(row["valor"].replace("R$", "").replace(",", "."))
                     if fator_estoque > 1:
                         valor = valor * (fator_estoque - quantia_estoque)
-                    print(valor)
                     mes = mes + valor
             else:
                 font.setBold(False)
@@ -174,8 +167,10 @@ class Tabela:
             linha += 1
         fundo = tabela["mensal_int"].sum()
         mes = round(mes/5, 0)*5
+        dif = fundo - mes
         self.labelFundo("Fundo mensal: " + "R${:.2f}".format(fundo).replace(".", ","))
         self.labelMes("Próximos gastos: " + "R${:.2f}".format(mes).replace(".", ","))
+        self.labelDif("Diferença: " + "R${:.2f}".format(dif).replace(".", ","))
         # self.labelMes(str(mes))
 
 

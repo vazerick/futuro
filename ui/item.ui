@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>191</width>
-    <height>232</height>
+    <height>209</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,6 +34,26 @@
       <widget class="QLabel" name="valorLabel">
        <property name="text">
         <string>Valor</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>R$</string>
        </property>
       </widget>
      </item>
@@ -69,6 +89,24 @@
        </item>
        <item>
         <widget class="QCheckBox" name="mensCheckBox"/>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QLabel" name="pausaNasFRiasLabel">
+         <property name="text">
+          <string>Pausa nas férias</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="pausaCheckBox"/>
        </item>
       </layout>
      </item>

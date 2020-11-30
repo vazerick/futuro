@@ -60,3 +60,19 @@ class Gui:
 
 # inicializa a janela
         self.wMain.show()
+
+    def ajusta(self):
+        self.ui.tableWidget.resizeColumnsToContents()
+        tamanho_total = self.ui.tableWidget.width()
+        colunas = []
+        tamanho_tabela = 0
+        for i in range(self.ui.tableWidget.columnCount()):
+            colunas.append(self.ui.tableWidget.columnWidth(i))
+            tamanho_tabela += self.ui.tableWidget.columnWidth(i)
+        sobra = tamanho_total - tamanho_tabela
+        extra = int(sobra/len(colunas))-5
+        for i in range(0, len(colunas)):
+            colunas[i] += extra
+            self.ui.tableWidget.setColumnWidth(i, colunas[i])
+        print(tamanho_total, colunas, tamanho_tabela, sobra, extra)
+

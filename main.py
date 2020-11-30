@@ -17,7 +17,9 @@ def atualizar():
     gui.ui.graficoBarra_2.limpa()
     Entrada.atualizar()
     Item.atualizar()
-    Previsao.atualizar(Entrada.tabela, Item.tabela)
+    Estoque.atualizar()
+    Ferias.atualizar()
+    Previsao.atualizar(Entrada.tabela, Item.tabela, Ferias.tabela)
     Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela)
     gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)
     temp = selecionado
@@ -58,6 +60,7 @@ def botao_editar():
         unidade = str(item["unidade"].item())
         mensuravel = item["mensuravel"].item()
         contavel = item["contavel"].item()
+        pausa = item["pausa"].item()
         if unidade == "nan":
             unidade = ""
 
@@ -72,6 +75,10 @@ def botao_editar():
             gui.uiEditar.contCheckBox.setCheckState(2)
         else:
             gui.uiEditar.contCheckBox.setCheckState(0)
+        if int(pausa):
+            gui.uiEditar.pausaCheckBox.setCheckState(2)
+        else:
+            gui.uiEditar.pausaCheckBox.setCheckState(0)
 
         gui.wEditar.show()
 
@@ -90,7 +97,8 @@ def editar_aceitar():
         unidade = gui.uiEditar.unidadeLineEdit.text()
         contavel = int(bool(gui.uiEditar.contCheckBox.checkState()))
         mensuravel = int(bool(gui.uiEditar.mensCheckBox.checkState()))
-        Item.editar(item.index.item(), [nome, valor, contavel, mensuravel, unidade])
+        pausa = int(bool(gui.uiEditar.pausaCheckBox.checkState()))
+        Item.editar(item.index.item(), [nome, pausa, valor, contavel, mensuravel, unidade])
         atualizar()
 
 
@@ -255,7 +263,8 @@ def add_aceitar():
         unidade = gui.uiAdd.unidadeLineEdit.text()
         contavel = int(bool(gui.uiAdd.contCheckBox.checkState()))
         mensuravel = int(bool(gui.uiAdd.mensCheckBox.checkState()))
-        Item.adicionar([nome, valor, contavel, mensuravel, unidade])
+        pausa = int(bool(gui.uiAdd.pausaCheckBox.checkState()))
+        Item.adicionar([nome, pausa, valor, contavel, mensuravel, unidade])
         atualizar()
         gui.wAdd.hide()
     else:
@@ -393,22 +402,27 @@ except FileNotFoundError:
 gui.ui.modoComboBox.setCurrentIndex(modo)
 
 Item = Dados("item",
-             ['nome', 'valor', 'contavel', 'mensuravel', 'unidade']
+             ['nome', 'pausa', 'valor', 'contavel', 'mensuravel', 'unidade']
              )
+print(Item.tabela)
 Entrada = Dados("entrada",
                 ['item', 'quantia', 'unidade', 'data']
                 )
 Estoque = Dados("estoque",
                 ['item', 'quantia']
                 )
+Ferias = Dados("ferias",
+               ['inicio', 'fim']
+               )
 
-Previsao = Previsao(Item.tabela, Entrada.tabela, modo)
+Previsao = Previsao(Item.tabela, Entrada.tabela, Ferias.tabela, modo)
 
-Tabela = Tabela(gui.ui.tableWidget, Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, gui.ui.labelFundo, gui.ui.labelMes)
+Tabela = Tabela(gui.ui.tableWidget, Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela,
+                gui.ui.labelFundo, gui.ui.labelMes, gui.ui.labelDif)
 
 Historico = TabelaHistorico(gui.uiHistorico.tableWidget)
 
-gui.ui.tableWidget.resizeColumnsToContents()
+gui.ajusta()
 #definições dos botões
 gui.ui.botaoAdicionar.clicked.connect(botao_add)
 gui.ui.botaoEditar.clicked.connect(botao_editar)

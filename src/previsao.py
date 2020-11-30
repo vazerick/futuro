@@ -7,16 +7,21 @@ class Previsao:
 
     modo = 0
 
-    def __init__(self, item, entrada, modo):
+    def __init__(self, item, entrada, ferias, modo):
         self.modo = modo
         self.colunas = ["id_item", "freq"]
         self.tabela = pd.DataFrame(columns=self.colunas)
         self.previsao = pd.DataFrame(columns=["item", "dias"])
-        self.atualizar(entrada, item)
+        self.atualizar(entrada, item, ferias)
 
-    def atualizar(self, entrada, item):
+    def atualizar(self, entrada, item, ferias):
         self.tabela = self.tabela.iloc[0:0]
         self.previsao = self.previsao.iloc[0:0]
+        if len(ferias) > 0:
+            ferias["inicio"] = ferias["inicio"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
+            ferias["fim"] = ferias["fim"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
+            ferias["dias"] = ferias.apply(lambda row: row["fim"] - row["inicio"], axis=1)
+            ferias["dias"] = ferias.apply(lambda row: row["dias"].days, axis=1)
         # lê cada item
         for index, row in item.iterrows():
             # cria uma cópia das entradas do item
@@ -29,7 +34,19 @@ class Previsao:
                 entradas["dias"] = -entradas["data"].diff(periods=-1)
                 entradas["dias"] = entradas["dias"].fillna(pd.Timedelta(seconds=0))
                 entradas["dias"] = entradas.apply(lambda row: row["dias"].days, axis=1)
+                entradas["ferias"] = 0
+                if len(ferias) > 0 and bool(int(row["pausa"])):
+                    for ferias_index, ferias_row in ferias.iterrows():
+                        for i in range(0, len(entradas)-1):
+                            ferias_inicio = ferias.iloc[ferias_index]["inicio"]
+                            ferias_fim = ferias.iloc[ferias_index]["fim"]
+                            entrada_inicio = entradas.iloc[i]["data"]
+                            entrada_fim = entradas.iloc[i+1]["data"]
+                            entrada_periodo = pd.period_range(entrada_inicio, entrada_fim)
+                            if ferias_inicio in entrada_periodo and ferias_fim in entrada_periodo:
+                                entradas.iloc[i, entradas.columns.get_loc('ferias')] = ferias.iloc[ferias_index]["dias"]
                 # calcula o fator entre dias/(quantia*unidade) e corta os valores nulos
+                entradas["dias"] = entradas.apply(lambda row: row["dias"] - row["ferias"], axis=1)
                 entradas["vezes"] = entradas.apply(lambda row: row["quantia"] * row["unidade"], axis=1)
                 entradas["fator"] = entradas.apply(lambda row: row["dias"] / row["vezes"], axis=1)
                 entradas = entradas.sort_values(by=["data"], ascending=True)

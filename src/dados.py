@@ -21,7 +21,6 @@ class Dados:
         try:
             self.tabela = pd.read_csv(self.endereco, quotechar="'", index_col='id')
             self.tabela = self.tabela.drop_duplicates()
-            print(self.tabela)
         except FileNotFoundError:
             self.tabela = pd.DataFrame(columns=self.colunas)
             self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')
@@ -57,3 +56,8 @@ class Dados:
     def excluir(self, id):
         self.tabela = self.tabela.drop(id)
         self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')
+
+    # def add_coluna(self, nome):
+    #     self.tabela[nome] = 0
+    #     self.tabela = self.tabela[[nome]+self.colunas]
+    #     self.tabela.to_csv(self.endereco, quotechar="'", index_label='id')
