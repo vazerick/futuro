@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog
 
 from ui.entrada import Ui_Dialog as Entrada
 from ui.excluir import Ui_Dialog as Excluir
+from ui.férias import Ui_Dialog as Ferias
 from ui.historico import Ui_Dialog as Historico
 from ui.item import Ui_Dialog as Item
 from ui.main import Ui_MainWindow as Main
@@ -48,6 +49,10 @@ class Gui:
         self.uiHistorico = Historico()
         self.uiHistorico.setupUi(self.wHistorico)
 
+        self.wFerias = QDialog()
+        self.uiFerias = Ferias()
+        self.uiFerias.setupUi(self.wFerias)
+
         for janela in [
             self.wMain,
             self.wAdd,
@@ -55,6 +60,7 @@ class Gui:
             self.wEntrada,
             self.wExcluir,
             self.wHistorico,
+            self.wFerias
         ]:
             janela.setWindowModality(Qt.ApplicationModal)       
 
@@ -74,5 +80,4 @@ class Gui:
         for i in range(0, len(colunas)):
             colunas[i] += extra
             self.ui.tableWidget.setColumnWidth(i, colunas[i])
-        print(tamanho_total, colunas, tamanho_tabela, sobra, extra)
 

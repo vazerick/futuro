@@ -7,15 +7,15 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 class Tabela:
 
-    def __init__(self, widget, item, entrada, previsao, estoque, fundo, mes, dif):
+    def __init__(self, widget, item, entrada, previsao, estoque, ferias, fundo, mes, dif):
 
         self.widget = widget
         self.labelFundo = fundo.setText
         self.labelMes = mes.setText
         self.labelDif = dif.setText
-        self.atualiza(item, entrada, previsao, estoque)
+        self.atualiza(item, entrada, previsao, estoque, ferias)
 
-    def atualiza(self, item, entrada, previsao, estoque):
+    def atualiza(self, item, entrada, previsao, estoque, ferias):
         #limpa a tabela
         self.widget.clear()
         self.widget.setRowCount(0)
@@ -23,18 +23,26 @@ class Tabela:
         mensal = ""
         mensal_int = 0
         fator_estoque = 1
+        flag = 0
         header = ["Item", "Último", "Previsão", "Valor", "Mensal"]
-        colunas = ["nome", "ultimo", "prev", "valor", "mensal_int", "mensal", "fator_estoque"]
+        colunas = ["nome", "ultimo", "prev", "valor", "mensal_int", "mensal", "fator_estoque", "flag"]
         self.widget.setHorizontalHeaderLabels(header)
         self.widget.verticalHeader().setVisible(False)
         entrada = entrada.copy()
         entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
         tabela = pd.DataFrame(columns=colunas)
+        ferias = ferias.copy()
+        if len(ferias) > 0:
+            ferias["inicio"] = ferias["inicio"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
+            ferias["fim"] = ferias["fim"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
+            ferias["dias"] = ferias.apply(lambda row: row["fim"] - row["inicio"], axis=1)
+            ferias["dias"] = ferias.apply(lambda row: row["dias"].days, axis=1)
 
         sem_prev = pd.DataFrame(columns=colunas)
         sem_entr = pd.DataFrame(columns=colunas)
 
         for index, row in item.iterrows():
+            flag = 0
             fator_estoque = 1
             historico = entrada[entrada["item"] == index].copy()
             if len(historico):
@@ -56,7 +64,8 @@ class Tabela:
                         valor,
                         mensal_int,
                         mensal,
-                        fator_estoque
+                        fator_estoque,
+                        flag
                     ]
                     self.widget.insertRow(0)
                     sem_prev = sem_prev.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
@@ -65,14 +74,36 @@ class Tabela:
                     if tempo == 0:
                         tempo = 1
                     prev = ultimo + timedelta(days=tempo)
+                    pausa = 0
+                    if len(ferias) > 0 and bool(int(row["pausa"])):
+                        quantia_estoque = estoque[estoque["item"] == index]["quantia"]
+                        if len(quantia_estoque):
+                            quantia_estoque = quantia_estoque.item()
+                        else:
+                            quantia_estoque = 0
+                        quantia_estoque += 1
+                        limite = ultimo + timedelta(days=tempo)*quantia_estoque
+                        print(row["nome"])
+                        print(prev, limite)
+                        for ferias_index, ferias_row in ferias.iterrows():
+                            ferias_inicio = ferias.loc[ferias_index]["inicio"]
+                            ferias_fim = ferias.loc[ferias_index]["fim"]
+                            intervalo = pd.Interval(ultimo,
+                                                    prev)
+                            intervalo_total = pd.Interval(ultimo,
+                                                    limite)
+                            if ferias_inicio in intervalo:
+                                dias_ferias = ferias.loc[ferias_index]["dias"].item()
+                                prev = prev + timedelta(days=dias_ferias)
+                                pausa += dias_ferias
+                            elif ferias_inicio in intervalo_total:
+                                flag += 1
+                        print(row["nome"], flag)
                     mensal_int = ((row["valor"]/timedelta(days=tempo).days)*30)
                     mensal_int = round(mensal_int/5, 0)*5
                     if mensal_int > row["valor"]:
                         fator_estoque = mensal_int/row["valor"]
-                        redondo = int(fator_estoque)
-                        if fator_estoque > redondo:
-                            redondo += 1
-                        fator_estoque = redondo
+                        # fator_estoque = int(fator_estoque)
                     mensal = "R${:.0f}".format(mensal_int)
                     linha = [
                         nome,
@@ -82,7 +113,8 @@ class Tabela:
                         valor,
                         mensal_int,
                         mensal,
-                        fator_estoque
+                        fator_estoque,
+                        flag
                     ]
 
                     self.widget.insertRow(0)
@@ -99,7 +131,8 @@ class Tabela:
                     valor,
                     mensal_int,
                     mensal,
-                    fator_estoque
+                    fator_estoque,
+                    flag
                 ]
                 self.widget.insertRow(0)
                 sem_entr = sem_entr.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
@@ -120,7 +153,8 @@ class Tabela:
                     quantia_estoque = quantia_estoque["quantia"].item()
                 else:
                     quantia_estoque = 0
-                if quantia_estoque < fator_estoque:
+                print(row["nome"], row["flag"])
+                if quantia_estoque < fator_estoque and not (row["flag"]):
                     font.setBold(True)
                     valor = float(row["valor"].replace("R$", "").replace(",", "."))
                     if fator_estoque > 1:
@@ -234,6 +268,3 @@ class TabelaHistorico:
                 self.widget.item(linha, coluna).setText(str(novo))
             except:
                 self.widget.item(linha, coluna).setText(str(original))
-
-
-

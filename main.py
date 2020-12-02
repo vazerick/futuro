@@ -4,6 +4,7 @@ from os import path, mkdir
 
 from pandas import isna
 
+from src.arvore import Arvore
 from src.dados import Dados
 from src.gui import Gui
 from src.previsao import Previsao
@@ -20,11 +21,13 @@ def atualizar():
     Estoque.atualizar()
     Ferias.atualizar()
     Previsao.atualizar(Entrada.tabela, Item.tabela, Ferias.tabela)
-    Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela)
+    Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, Ferias.tabela)
+    Arvore.atualiza(Ferias.tabela)
     gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)
     temp = selecionado
-    gui.ui.tableWidget.setCurrentCell(0, 0)
-    gui.ui.tableWidget.setCurrentCell(temp, 0)
+    if temp >= 0:
+        gui.ui.tableWidget.setCurrentCell(0, 0)
+        gui.ui.tableWidget.setCurrentCell(temp, 0)
 
 
 def limpar_texto(*arg):
@@ -381,6 +384,25 @@ def seleciona_modo():
     Previsao.modo = modo
     atualizar()
 
+
+def botao_ferias():
+    gui.uiFerias.inicioDateEdit.setDate(datetime.now())
+    gui.uiFerias.fimDateEdit.setDate(datetime.now())
+    gui.wFerias.show()
+
+
+def ferias_adicionar():
+    inicio = gui.uiFerias.inicioDateEdit.date()
+    fim = gui.uiFerias.fimDateEdit.date()
+    if fim > inicio:
+        inicio = inicio.toString("dd/MM/yy")
+        fim = fim.toString("dd/MM/yy")
+        Ferias.adicionar([inicio, fim])
+        atualizar()
+    else:
+        print("não ok")
+
+
 gui = Gui()
 
 gui.uiHistorico.botaoExcluir.hide()
@@ -404,7 +426,6 @@ gui.ui.modoComboBox.setCurrentIndex(modo)
 Item = Dados("item",
              ['nome', 'pausa', 'valor', 'contavel', 'mensuravel', 'unidade']
              )
-print(Item.tabela)
 Entrada = Dados("entrada",
                 ['item', 'quantia', 'unidade', 'data']
                 )
@@ -417,8 +438,10 @@ Ferias = Dados("ferias",
 
 Previsao = Previsao(Item.tabela, Entrada.tabela, Ferias.tabela, modo)
 
-Tabela = Tabela(gui.ui.tableWidget, Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela,
+Tabela = Tabela(gui.ui.tableWidget, Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, Ferias.tabela,
                 gui.ui.labelFundo, gui.ui.labelMes, gui.ui.labelDif)
+
+Arvore = Arvore(gui.uiFerias.treeWidget, Ferias.tabela)
 
 Historico = TabelaHistorico(gui.uiHistorico.tableWidget)
 
@@ -430,12 +453,14 @@ gui.ui.botaoFeito.clicked.connect(botao_feito)
 gui.ui.botaoExcluir.clicked.connect(botao_excluir)
 gui.ui.botaoHistorico.clicked.connect(botao_historico)
 gui.ui.botaoEstoque.clicked.connect(botao_estoque)
+gui.ui.botaoFerias.clicked.connect(botao_ferias)
 gui.uiAdd.buttonBox.accepted.connect(add_aceitar)
 gui.uiEntrada.buttonBox.accepted.connect(entrada_aceitar)
 gui.uiEditar.buttonBox.accepted.connect(editar_aceitar)
 gui.uiExcluir.buttonBox.accepted.connect(excluir_aceitar)
 gui.uiHistorico.buttonBox.accepted.connect(historico_aceitar)
-
+gui.uiFerias.botaoAdd.clicked.connect(ferias_adicionar)
+gui.uiFerias.pushButton.clicked.connect(gui.wFerias.hide)
 
 #definições dos sinais
 gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)

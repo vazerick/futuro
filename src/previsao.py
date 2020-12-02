@@ -17,6 +17,7 @@ class Previsao:
     def atualizar(self, entrada, item, ferias):
         self.tabela = self.tabela.iloc[0:0]
         self.previsao = self.previsao.iloc[0:0]
+        ferias = ferias.copy()
         if len(ferias) > 0:
             ferias["inicio"] = ferias["inicio"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
             ferias["fim"] = ferias["fim"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
@@ -38,11 +39,12 @@ class Previsao:
                 if len(ferias) > 0 and bool(int(row["pausa"])):
                     for ferias_index, ferias_row in ferias.iterrows():
                         for i in range(0, len(entradas)-1):
-                            ferias_inicio = ferias.iloc[ferias_index]["inicio"]
-                            ferias_fim = ferias.iloc[ferias_index]["fim"]
+                            ferias_inicio = ferias.loc[ferias_index]["inicio"]
+                            ferias_fim = ferias.loc[ferias_index]["fim"]
                             entrada_inicio = entradas.iloc[i]["data"]
                             entrada_fim = entradas.iloc[i+1]["data"]
-                            entrada_periodo = pd.period_range(entrada_inicio, entrada_fim)
+                            entrada_periodo = pd.Interval(entrada_inicio,
+                                                          entrada_fim)
                             if ferias_inicio in entrada_periodo and ferias_fim in entrada_periodo:
                                 entradas.iloc[i, entradas.columns.get_loc('ferias')] = ferias.iloc[ferias_index]["dias"]
                 # calcula o fator entre dias/(quantia*unidade) e corta os valores nulos
@@ -94,4 +96,3 @@ class Previsao:
                     columns=self.colunas
                 )
             self.tabela = self.tabela.append(linha, ignore_index=True, sort=False)
-
