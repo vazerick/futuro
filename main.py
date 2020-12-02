@@ -236,6 +236,7 @@ def entrada_aceitar():
             item,
             [
                 linha["nome"].item(),
+                linha["pausa"].item(),
                 valor,
                 linha["contavel"].item(),
                 linha["mensuravel"].item(),
