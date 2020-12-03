@@ -9,6 +9,7 @@ from ui.excluir import Ui_Dialog as Excluir
 from ui.férias import Ui_Dialog as Ferias
 from ui.historico import Ui_Dialog as Historico
 from ui.item import Ui_Dialog as Item
+from ui.comparar import Ui_Dialog as Comparar
 from ui.main import Ui_MainWindow as Main
 
 
@@ -53,6 +54,10 @@ class Gui:
         self.uiFerias = Ferias()
         self.uiFerias.setupUi(self.wFerias)
 
+        self.wComparar = QDialog()
+        self.uiComparar = Comparar()
+        self.uiComparar.setupUi(self.wComparar)
+
         for janela in [
             self.wMain,
             self.wAdd,
@@ -60,7 +65,8 @@ class Gui:
             self.wEntrada,
             self.wExcluir,
             self.wHistorico,
-            self.wFerias
+            self.wFerias,
+            self.wComparar
         ]:
             janela.setWindowModality(Qt.ApplicationModal)       
 

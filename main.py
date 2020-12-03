@@ -386,6 +386,120 @@ def seleciona_modo():
     atualizar()
 
 
+def botao_comparar():
+    global selecionado
+    limpar_texto(
+        gui.uiComparar.valorDoubleSpinBox,
+        gui.uiComparar.label,
+        gui.uiComparar.labelMensalNovo,
+        gui.uiComparar.labelMensalVelho,
+        gui.uiComparar.labelDiferenca
+    )
+    if selecionado >= 0:
+        if gui.ui.tableWidget.item(selecionado, 2).text() != "Sem previsão" and gui.ui.tableWidget.item(selecionado, 4).text() != "R$0":
+            item = gui.ui.tableWidget.item(selecionado, 0).text()
+            item = Item.tabela[Item.tabela["nome"] == item]
+            id_item = item.index.item()
+            entrada = Entrada.tabela[Entrada.tabela["item"] == id_item].copy()
+            entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
+
+            ultimo = entrada["data"].max()
+            entrada = entrada[entrada["data"] == ultimo]
+            ultimo_unidade = entrada["unidade"].item()
+            ultimo_quantia = entrada["quantia"].item()
+            print(ultimo_unidade, ultimo_quantia)
+
+            nome = item["nome"].item()
+            valor = item["valor"].item()
+            unidade = str(item["unidade"].item())
+            mensuravel = item["mensuravel"].item()
+            contavel = item["contavel"].item()
+            if unidade == "nan":
+                unidade = ""
+
+            gui.uiComparar.label.setText(nome)
+            gui.uiComparar.label_5.setText(unidade)
+            gui.uiComparar.label_6.setText(unidade)
+            gui.uiComparar.valorDoubleSpinBox.setValue(valor)
+            gui.uiComparar.valorNovoDoubleSpinBox.setValue(valor)
+            gui.uiComparar.unidadeDoubleSpinBox.setValue(ultimo_unidade)
+            gui.uiComparar.unidadeNovoDoubleSpinBox.setValue(ultimo_unidade)
+            gui.uiComparar.quantiaSpinBox.setValue(ultimo_quantia)
+            gui.uiComparar.quantiaNovoSpinBox.setValue(ultimo_quantia)
+            if int(mensuravel):
+                gui.uiComparar.unidadeLabel.setEnabled(True)
+                gui.uiComparar.unidadeLabel_2.setEnabled(True)
+                gui.uiComparar.unidadeDoubleSpinBox.setEnabled(True)
+                gui.uiComparar.unidadeNovoDoubleSpinBox.setEnabled(True)
+            else:
+                gui.uiComparar.unidadeLabel.setEnabled(False)
+                gui.uiComparar.unidadeDoubleSpinBox.setEnabled(False)
+                gui.uiComparar.unidadeLabel_2.setEnabled(False)
+                gui.uiComparar.unidadeNovoDoubleSpinBox.setEnabled(False)
+            if int(contavel):
+                gui.uiComparar.quantiaLabel.setEnabled(True)
+                gui.uiComparar.quantiaSpinBox.setEnabled(True)
+                gui.uiComparar.quantiaLabel_2.setEnabled(True)
+                gui.uiComparar.quantiaNovoSpinBox.setEnabled(True)
+            else:
+                gui.uiComparar.quantiaLabel.setEnabled(False)
+                gui.uiComparar.quantiaSpinBox.setEnabled(False)
+                gui.uiComparar.quantiaLabel_2.setEnabled(False)
+                gui.uiComparar.quantiaNovoSpinBox.setEnabled(False)
+            for i in [
+                gui.uiComparar.unidadeDoubleSpinBox,
+                gui.uiComparar.quantiaSpinBox,
+                gui.uiComparar.valorDoubleSpinBox
+            ]:
+                i.setReadOnly(True)
+            gui.wComparar.show()
+            calculo_comparar()
+
+
+def calculo_comparar():
+    global selecionado
+    if selecionado >= 0:
+        valor = gui.uiComparar.valorDoubleSpinBox.value()
+        mensal = gui.ui.tableWidget.item(selecionado, 4).text()
+        gui.uiComparar.labelMensalVelho.setText("Atual: " + mensal +"/mês")
+        mensal = valor_to_int(mensal)
+        fator_mensal = mensal/valor
+        unidade = gui.uiComparar.unidadeDoubleSpinBox.value()
+        quantia = gui.uiComparar.quantiaSpinBox.value()
+        if unidade > 0 and quantia > 0:
+
+            vezes = unidade*quantia
+            fator_valor = valor/vezes
+            unidade_novo = gui.uiComparar.unidadeNovoDoubleSpinBox.value()
+            quantia_novo = gui.uiComparar.quantiaNovoSpinBox.value()
+            valor_novo = gui.uiComparar.valorNovoDoubleSpinBox.value()
+            vezes_novo = unidade_novo*quantia_novo
+            fator_mensal_novo = (fator_mensal*vezes_novo)/vezes
+            fator_valor_novo = valor_novo/vezes_novo
+
+            mensal_novo = (fator_valor_novo/fator_valor)*mensal
+            diff = mensal_novo - mensal
+
+            gui.uiComparar.labelMensalNovo.setText("Novo: " + int_to_valor(mensal_novo) +"/mês")
+            gui.uiComparar.labelDiferenca.setText("Diferença: " + int_to_valor(diff) +"/mês")
+        # print(valor_to_int(valor), valor_to_int(mensal))
+        # item = Item.tabela[Item.tabela["nome"] == item]
+        # id_item = item.index.item()
+        # print(Previsao.tabela[Previsao.tabela["item"] == id_item])
+
+
+def valor_to_int(valor):
+    valor = valor.replace("R$", "")
+    valor = valor.replace(",", ".")
+    valor = float(valor)
+    return valor
+
+
+def int_to_valor(valor):
+    valor = "R${:.0f}".format(valor)
+    return valor
+
+
 def botao_ferias():
     gui.uiFerias.inicioDateEdit.setDate(datetime.now())
     gui.uiFerias.fimDateEdit.setDate(datetime.now())
@@ -455,6 +569,7 @@ gui.ui.botaoExcluir.clicked.connect(botao_excluir)
 gui.ui.botaoHistorico.clicked.connect(botao_historico)
 gui.ui.botaoEstoque.clicked.connect(botao_estoque)
 gui.ui.botaoFerias.clicked.connect(botao_ferias)
+gui.ui.botaoComparar.clicked.connect(botao_comparar)
 gui.uiAdd.buttonBox.accepted.connect(add_aceitar)
 gui.uiEntrada.buttonBox.accepted.connect(entrada_aceitar)
 gui.uiEditar.buttonBox.accepted.connect(editar_aceitar)
@@ -462,9 +577,12 @@ gui.uiExcluir.buttonBox.accepted.connect(excluir_aceitar)
 gui.uiHistorico.buttonBox.accepted.connect(historico_aceitar)
 gui.uiFerias.botaoAdd.clicked.connect(ferias_adicionar)
 gui.uiFerias.pushButton.clicked.connect(gui.wFerias.hide)
-
+gui.uiComparar.buttonBox.accepted.connect(gui.wComparar.hide)
 #definições dos sinais
 gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)
 gui.ui.modoComboBox.currentIndexChanged.connect(seleciona_modo)
+gui.uiComparar.quantiaNovoSpinBox.valueChanged.connect(calculo_comparar)
+gui.uiComparar.unidadeNovoDoubleSpinBox.valueChanged.connect(calculo_comparar)
+gui.uiComparar.valorNovoDoubleSpinBox.valueChanged.connect(calculo_comparar)
 
 sys.exit(gui.app.exec_())
