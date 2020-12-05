@@ -498,8 +498,8 @@ def calculo_comparar():
             vezes_novo = unidade_novo*quantia_novo
             fator_mensal_novo = (fator_mensal*vezes_novo)/vezes
             fator_valor_novo = valor_novo/vezes_novo
-
             mensal_novo = (fator_valor_novo/fator_valor)*mensal
+            mensal_novo = round(mensal_novo / 5, 0) * 5
             diff = mensal_novo - mensal
 
             gui.uiComparar.labelMensalNovo.setText("Novo: " + int_to_valor(mensal_novo) +"/mês")
