@@ -194,10 +194,22 @@ def botao_feito():
         if unidade == "nan":
             unidade = ""
 
+        id_item = item.index.item()
+        entrada = Entrada.tabela[Entrada.tabela["item"] == id_item].copy()
+        if len(entrada):
+            entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
+            ultimo = entrada["data"].max()
+            entrada = entrada[entrada["data"] == ultimo]
+            ultimo_unidade = entrada["unidade"].item()
+            ultimo_quantia = entrada["quantia"].item()
+        else:
+            ultimo_unidade = 1
+            ultimo_quantia = 1
+
         gui.uiEntrada.labelNome.setText(nome)
         gui.uiEntrada.valorDoubleSpinBox.setValue(valor)
-        gui.uiEntrada.unidadeDoubleSpinBox.setValue(1)
-        gui.uiEntrada.quantiaSpinBox.setValue(1)
+        gui.uiEntrada.unidadeDoubleSpinBox.setValue(ultimo_unidade)
+        gui.uiEntrada.quantiaSpinBox.setValue(ultimo_quantia)
         if int(mensuravel):
             gui.uiEntrada.label.setEnabled(True)
             gui.uiEntrada.unidadeLabel.setEnabled(True)
