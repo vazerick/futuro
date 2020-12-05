@@ -194,17 +194,19 @@ def botao_feito():
         if unidade == "nan":
             unidade = ""
 
-        id_item = item.index.item()
-        entrada = Entrada.tabela[Entrada.tabela["item"] == id_item].copy()
-        if len(entrada):
-            entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
-            ultimo = entrada["data"].max()
-            entrada = entrada[entrada["data"] == ultimo]
-            ultimo_unidade = entrada["unidade"].item()
-            ultimo_quantia = entrada["quantia"].item()
-        else:
-            ultimo_unidade = 1
-            ultimo_quantia = 1
+        ultimo_unidade, ultimo_quantia = ultima_entrada(item)
+
+        # id_item = item.index.item()
+        # entrada = Entrada.tabela[Entrada.tabela["item"] == id_item].copy()
+        # if len(entrada):
+        #     entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
+        #     ultimo = entrada["data"].max()
+        #     entrada = entrada[entrada["data"] == ultimo]
+        #     ultimo_unidade = entrada["unidade"].item()
+        #     ultimo_quantia = entrada["quantia"].item()
+        # else:
+        #     ultimo_unidade = 1
+        #     ultimo_quantia = 1
 
         gui.uiEntrada.labelNome.setText(nome)
         gui.uiEntrada.valorDoubleSpinBox.setValue(valor)
@@ -398,6 +400,21 @@ def seleciona_modo():
     atualizar()
 
 
+def ultima_entrada(item):
+    id_item = item.index.item()
+    entrada = Entrada.tabela[Entrada.tabela["item"] == id_item].copy()
+    if len(entrada):
+        entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
+
+        ultimo = entrada["data"].max()
+        entrada = entrada[entrada["data"] == ultimo]
+        ultimo_unidade = entrada["unidade"].item()
+        ultimo_quantia = entrada["quantia"].item()
+        return [ultimo_unidade, ultimo_quantia]
+    else:
+        return [1, 1]
+
+
 def botao_comparar():
     global selecionado
     limpar_texto(
@@ -411,15 +428,8 @@ def botao_comparar():
         if gui.ui.tableWidget.item(selecionado, 2).text() != "Sem previsão" and gui.ui.tableWidget.item(selecionado, 4).text() != "R$0":
             item = gui.ui.tableWidget.item(selecionado, 0).text()
             item = Item.tabela[Item.tabela["nome"] == item]
-            id_item = item.index.item()
-            entrada = Entrada.tabela[Entrada.tabela["item"] == id_item].copy()
-            entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
 
-            ultimo = entrada["data"].max()
-            entrada = entrada[entrada["data"] == ultimo]
-            ultimo_unidade = entrada["unidade"].item()
-            ultimo_quantia = entrada["quantia"].item()
-            print(ultimo_unidade, ultimo_quantia)
+            ultimo_unidade, ultimo_quantia = ultima_entrada(item)
 
             nome = item["nome"].item()
             valor = item["valor"].item()
