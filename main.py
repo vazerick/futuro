@@ -4,11 +4,11 @@ from os import path, mkdir
 
 from pandas import isna
 
-from src.arvore import Arvore
+from src.arvore import Arvore, ArvorePlanejar
 from src.dados import Dados
 from src.gui import Gui
 from src.previsao import Previsao
-from src.tabela import Tabela, TabelaHistorico
+from src.tabela import Tabela, TabelaHistorico, TabelaPlanejar
 
 selecionado = -1
 
@@ -129,8 +129,73 @@ def botao_historico():
         gui.wHistorico.show()
 
 
+def botao_planejar():
+    gui.wPlanejar.show()
+    ArvorePlanejar.atualizar(Tabela.tabela)
+    gui.uiPlanejar.stackedWidget.setCurrentIndex(0)
+
+
+def botao_proximo1():
+    selecionadas = ArvorePlanejar.selecionadas()
+    if len(selecionadas):
+        gui.uiPlanejar.tabelaEstoque.cellChanged.disconnect()
+        TabelaPlanejar.limpa()
+        gui.uiPlanejar.stackedWidget.setCurrentIndex(1)
+        for nome in selecionadas:
+            # ["nome", "prev", "quantia", "unidade", "sigla", "freq", "estoque"]
+            tabela = Tabela.tabela[Tabela.tabela["nome"] == nome].copy()
+            item = Item.tabela[Item.tabela["nome"] == nome].copy()
+            id_item = item.index.item()
+            prev = tabela["prev"].item()
+            unidade, quantia = ultima_entrada(item)
+            sigla = item["unidade"].item()
+            estoque = Estoque.tabela[Estoque.tabela["item"] == id_item]["quantia"]
+            if len(estoque):
+                estoque = estoque.item()
+            else:
+                estoque = 0
+            freq = Previsao.tabela[Previsao.tabela["id_item"] == id_item]["freq"].item()
+            if isna(sigla):
+                sigla = " "
+            TabelaPlanejar.add([
+                nome,
+                prev,
+                quantia,
+                unidade,
+                sigla,
+                freq,
+                estoque
+            ])
+        TabelaPlanejar.atualiza_estoque()
+        gui.uiPlanejar.tabelaEstoque.cellChanged.connect(tabela_estoque_edita)
+        print(TabelaPlanejar.tabela)
+
+
+def botao_proximo2():
+    gui.uiPlanejar.tabelaPlanejamento.cellChanged.disconnect()
+    TabelaPlanejar.atualiza_planejamento()
+    gui.uiPlanejar.tabelaPlanejamento.cellChanged.connect(tabela_planejamento_edita)
+    gui.uiPlanejar.stackedWidget.setCurrentIndex(2)
+
+
+def botao_anterior1():
+    gui.uiPlanejar.stackedWidget.setCurrentIndex(0)
+
+
+def botao_anterior2():
+    gui.uiPlanejar.stackedWidget.setCurrentIndex(1)
+
+
 def tabela_edita(linha, coluna):
     Historico.sinal(linha, coluna)
+
+
+def tabela_planejamento_edita(linha, coluna):
+    TabelaPlanejar.sinal_planejamento(linha, coluna)
+
+
+def tabela_estoque_edita(linha, coluna):
+    TabelaPlanejar.sinal_estoque(linha, coluna)
 
 
 def historico_aceitar():
@@ -581,8 +646,13 @@ Previsao = Previsao(Item.tabela, Entrada.tabela, Ferias.tabela, modo)
 
 Tabela = Tabela(gui.ui.tableWidget, Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, Ferias.tabela,
                 gui.ui.labelFundo, gui.ui.labelMes, gui.ui.labelDif)
+TabelaPlanejar = TabelaPlanejar(
+    gui.uiPlanejar.tabelaEstoque, gui.uiPlanejar.tabelaPlanejamento, gui.uiPlanejar.labelUltimo,
+    gui.uiPlanejar.labelPrimeiro, gui.uiPlanejar.labelIntervalo
+)
 
 Arvore = Arvore(gui.uiFerias.treeWidget, Ferias.tabela)
+ArvorePlanejar = ArvorePlanejar(gui.uiPlanejar.treeWidget)
 
 Historico = TabelaHistorico(gui.uiHistorico.tableWidget)
 
@@ -596,6 +666,11 @@ gui.ui.botaoHistorico.clicked.connect(botao_historico)
 gui.ui.botaoEstoque.clicked.connect(botao_estoque)
 gui.ui.botaoFerias.clicked.connect(botao_ferias)
 gui.ui.botaoComparar.clicked.connect(botao_comparar)
+gui.ui.botaoPlanejar.clicked.connect(botao_planejar)
+gui.uiPlanejar.botaoProximo1.clicked.connect(botao_proximo1)
+gui.uiPlanejar.botaoProximo2.clicked.connect(botao_proximo2)
+gui.uiPlanejar.botaoAnterior1.clicked.connect(botao_anterior1)
+gui.uiPlanejar.botaoAnterior2.clicked.connect(botao_anterior2)
 gui.uiAdd.buttonBox.accepted.connect(add_aceitar)
 gui.uiEntrada.buttonBox.accepted.connect(entrada_aceitar)
 gui.uiEditar.buttonBox.accepted.connect(editar_aceitar)
@@ -610,5 +685,7 @@ gui.ui.modoComboBox.currentIndexChanged.connect(seleciona_modo)
 gui.uiComparar.quantiaNovoSpinBox.valueChanged.connect(calculo_comparar)
 gui.uiComparar.unidadeNovoDoubleSpinBox.valueChanged.connect(calculo_comparar)
 gui.uiComparar.valorNovoDoubleSpinBox.valueChanged.connect(calculo_comparar)
+gui.uiPlanejar.tabelaEstoque.cellChanged.connect(tabela_estoque_edita)
+gui.uiPlanejar.tabelaPlanejamento.cellChanged.connect(tabela_planejamento_edita)
 
 sys.exit(gui.app.exec_())

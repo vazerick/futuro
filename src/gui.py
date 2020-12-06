@@ -10,11 +10,9 @@ from ui.férias import Ui_Dialog as Ferias
 from ui.historico import Ui_Dialog as Historico
 from ui.item import Ui_Dialog as Item
 from ui.comparar import Ui_Dialog as Comparar
+from ui.planejar import Ui_Dialog as Planejar
 from ui.main import Ui_MainWindow as Main
 
-
-# import do PyQt5
-# import das janelas
 
 class Gui:
 
@@ -58,6 +56,11 @@ class Gui:
         self.uiComparar = Comparar()
         self.uiComparar.setupUi(self.wComparar)
 
+        self.wPlanejar = QDialog()
+        self.uiPlanejar = Planejar()
+        self.uiPlanejar.setupUi(self.wPlanejar)
+        self.uiPlanejar.stackedWidget.setCurrentIndex(0)
+
         for janela in [
             self.wMain,
             self.wAdd,
@@ -66,7 +69,8 @@ class Gui:
             self.wExcluir,
             self.wHistorico,
             self.wFerias,
-            self.wComparar
+            self.wComparar,
+            self.wPlanejar
         ]:
             janela.setWindowModality(Qt.ApplicationModal)       
 
@@ -82,8 +86,7 @@ class Gui:
             colunas.append(self.ui.tableWidget.columnWidth(i))
             tamanho_tabela += self.ui.tableWidget.columnWidth(i)
         sobra = tamanho_total - tamanho_tabela
-        extra = int(sobra/len(colunas))-5
+        extra = int(sobra/len(colunas))+5
         for i in range(0, len(colunas)):
             colunas[i] += extra
             self.ui.tableWidget.setColumnWidth(i, colunas[i])
-
