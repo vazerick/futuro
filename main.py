@@ -277,14 +277,18 @@ def add_aceitar():
     nome = gui.uiAdd.nomeLineEdit.text()
     nome = nome.capitalize()
     if len(nome) > 1:
-        valor = gui.uiAdd.valorDoubleSpinBox.value()
-        unidade = gui.uiAdd.unidadeLineEdit.text()
-        contavel = int(bool(gui.uiAdd.contCheckBox.checkState()))
-        mensuravel = int(bool(gui.uiAdd.mensCheckBox.checkState()))
-        pausa = int(bool(gui.uiAdd.pausaCheckBox.checkState()))
-        Item.adicionar([nome, pausa, valor, contavel, mensuravel, unidade])
-        atualizar()
-        gui.wAdd.hide()
+        itens = Item.tabela[Item.tabela["nome"] == nome]
+        if len(itens) == 0:
+            valor = gui.uiAdd.valorDoubleSpinBox.value()
+            unidade = gui.uiAdd.unidadeLineEdit.text()
+            contavel = int(bool(gui.uiAdd.contCheckBox.checkState()))
+            mensuravel = int(bool(gui.uiAdd.mensCheckBox.checkState()))
+            pausa = int(bool(gui.uiAdd.pausaCheckBox.checkState()))
+            Item.adicionar([nome, pausa, valor, contavel, mensuravel, unidade])
+            atualizar()
+            gui.wAdd.hide()
+        else:
+            print("Nome repetido")
     else:
         print("Nome vazio")
 
@@ -425,7 +429,7 @@ def botao_comparar():
         gui.uiComparar.labelDiferenca
     )
     if selecionado >= 0:
-        if gui.ui.tableWidget.item(selecionado, 2).text() != "Sem previsão" and gui.ui.tableWidget.item(selecionado, 4).text() != "R$0":
+        if gui.ui.tableWidget.item(selecionado, 2).text() != "Sem previsão" and gui.ui.tableWidget.item(selecionado, 3).text() != "R$0":
             item = gui.ui.tableWidget.item(selecionado, 0).text()
             item = Item.tabela[Item.tabela["nome"] == item]
 
