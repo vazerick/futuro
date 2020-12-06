@@ -59,7 +59,8 @@ class Tabela:
                 if pd.isna(freq):
                     linha = [
                         nome,
-                        ultimo.strftime("%d/%m/%y"),
+                        # ultimo.strftime("%d/%m/%y"),
+                        ultimo,
                         "Sem previsão",
                         valor,
                         mensal_int,
@@ -136,12 +137,18 @@ class Tabela:
                 ]
                 self.widget.insertRow(0)
                 sem_entr = sem_entr.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
-        tabela = tabela.sort_values(by=["prev"], ascending=False)
 
         linha = 0
-        # tabela["sort"] = tabela.to_datetime(tabela["prev"])
+
         mes = 0
+
         tabela = tabela.sort_values(by=["prev"])
+
+        sem_prev = sem_prev.sort_values(by=["ultimo"])
+        sem_prev["ultimo"] = sem_prev["ultimo"].apply(lambda row: datetime.strftime(row, "%d/%m/%y"))
+
+        sem_entr = sem_entr.sort_values(by=["nome"])
+        
         for index, row in tabela.iterrows():
             font = QFont()
             if row["prev"] < datetime.today() + timedelta(days=30):
