@@ -51,7 +51,7 @@ class Tabela:
                 nome = row["nome"]
                 valor = "R${:.2f}".format(float(row["valor"])).replace(".", ",")
                 ultimo = historico["data"].max()
-                vezes = historico[historico["data"] == ultimo]["vezes"].item()
+                vezes = historico[historico["data"] == ultimo]["vezes"].iloc[-1].item()
                 if len(previsao[previsao["id_item"] == index]):
                     freq = previsao[previsao["id_item"] == index]["freq"].item()
                 else:
