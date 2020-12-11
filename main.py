@@ -28,6 +28,8 @@ def atualizar():
     if temp >= 0:
         gui.ui.tableWidget.setCurrentCell(0, 0)
         gui.ui.tableWidget.setCurrentCell(temp, 0)
+    else:
+        selecionado_widget(False)
 
 
 def limpar_texto(*arg):
@@ -361,6 +363,7 @@ def add_aceitar():
 def tabela_seleciona(item):
     global selecionado
     linha = item.row()
+    selecionado_widget(True)
     if selecionado != linha:
         # gui.ui.graficoBarra_2.hide()
         selecionado = linha
@@ -609,6 +612,14 @@ def ferias_adicionar():
         print("não ok")
 
 
+def selecionado_widget(estado):
+    estado = bool(estado)
+    gui.ui.selecionadoFrame.setEnabled(estado)
+    gui.ui.botaoEstoque.setEnabled(estado)
+    gui.ui.botaoFeito.setEnabled(estado)
+    gui.ui.spinBox.setEnabled(estado)
+
+
 gui = Gui()
 
 gui.uiHistorico.botaoExcluir.hide()
@@ -628,6 +639,8 @@ except FileNotFoundError:
         arquivo.close()
 
 gui.ui.modoComboBox.setCurrentIndex(modo)
+
+selecionado_widget(False)
 
 Item = Dados("item",
              ['nome', 'pausa', 'valor', 'contavel', 'mensuravel', 'unidade']
