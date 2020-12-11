@@ -22,27 +22,36 @@ class PlotBarra(FigureCanvas):
         self.titulo = "Título"
         self.nome_valores = "Valores"
         self.nome_rotulos = "Rotulos"
+        self.ax = self.fig.add_subplot(111)
 
     def plot(self, frequencia, historico):
-        ax = self.fig.add_subplot(111)
-        ax.clear()
-
-        tick = frequencia
-        tick = round(tick / 4)
+        self.ax.clear()
+        if frequencia*2 < max(historico):
+            ref = max(historico)
+        else:
+            ref = frequencia
+        tick = round(ref / 4)
         yticks = [0, tick, tick * 2, tick * 3, tick * 4]
 
-        erro = (1-frequencia/(tick*4))*100
+        erro = (1-ref/(tick*4))*100
         erro = abs(erro)
-
-        if erro >= 5:
-            yticks.append(frequencia)
 
         count = 4
         while tick * count < max(historico):
             yticks.append(tick * count)
             count += 1
-        ax.set_yticks(yticks, minor=False)
-        ax.yaxis.grid(True, which='major', linewidth=0.5)
+
+        if max(yticks) > 20:
+            for i in range(0, len(yticks)):
+                print(i, yticks[i])
+                yticks[i] = round(yticks[i]/5)*5
+                print(i, yticks[i])
+
+        if erro >= 5:
+            yticks.append(frequencia)
+
+        self.ax.set_yticks(yticks, minor=False)
+        self.ax.yaxis.grid(True, which='major', linewidth=0.5)
 
 
         step = round(len(historico)/10)
@@ -50,17 +59,17 @@ class PlotBarra(FigureCanvas):
             step = 1
 
         xticks = range(step, len(historico), step)
-        ax.set_xticks(xticks, minor=False)
+        self.ax.set_xticks(xticks, minor=False)
 
         cores = ["#35978F"] * len(historico)
         cores[-1] = "#003C30"
-        barras = ax.bar(range(1, len(historico)+1), historico, color=cores)
+        barras = self.ax.bar(range(1, len(historico)+1), historico, color=cores)
         media = frequencia
-        ax.set_facecolor("#F5CBF5")
-        ax.axhline(y=media, zorder=0, color="#BF812D", linewidth=2.5)
+        self.ax.set_facecolor("#F5CBF5")
+        self.ax.axhline(y=media, zorder=0, color="#BF812D", linewidth=2.5)
 
         if len(self.titulo):
-            ax.set_title(self.titulo)
+            self.ax.set_title(self.titulo)
 
         rotulos = []
         if len(historico) > 1:
@@ -74,18 +83,17 @@ class PlotBarra(FigureCanvas):
         for barra, valor in zip(barras, historico):
             if valor in rotulos:
                 height = barra.get_height()
-                ax.text(barra.get_x() + barra.get_width() / 2, height - 1, valor,
+                self.ax.text(barra.get_x() + barra.get_width() / 2, height - 1, valor,
                         ha='center', va='bottom')
                 rotulos.remove(valor)
         barra = barras[-1]
         valor = historico[-1]
         height = barra.get_height()
-        ax.text(barra.get_x() + barra.get_width() / 2, height - 1, valor,
+        self.ax.text(barra.get_x() + barra.get_width() / 2, height - 1, valor,
                 ha='center', va='bottom')
 
         self.draw()
 
     def limpa(self):
-        ax = self.fig.add_subplot(111)
-        ax.clear()
+        self.ax.clear()
         self.draw()
