@@ -43,9 +43,7 @@ class PlotBarra(FigureCanvas):
 
         if max(yticks) > 20:
             for i in range(0, len(yticks)):
-                print(i, yticks[i])
                 yticks[i] = round(yticks[i]/5)*5
-                print(i, yticks[i])
 
         if erro >= 5:
             yticks.append(frequencia)

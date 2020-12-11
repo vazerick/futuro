@@ -170,7 +170,6 @@ def botao_proximo1():
             ])
         TabelaPlanejar.atualiza_estoque()
         gui.uiPlanejar.tabelaEstoque.cellChanged.connect(tabela_estoque_edita)
-        print(TabelaPlanejar.tabela)
 
 
 def botao_proximo2():
