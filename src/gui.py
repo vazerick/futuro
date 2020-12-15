@@ -86,7 +86,7 @@ class Gui:
             colunas.append(self.ui.tableWidget.columnWidth(i))
             tamanho_tabela += self.ui.tableWidget.columnWidth(i)
         sobra = tamanho_total - tamanho_tabela
-        extra = int(sobra/len(colunas))+5
+        extra = int(sobra/len(colunas))-3
         for i in range(0, len(colunas)):
             colunas[i] += extra
             self.ui.tableWidget.setColumnWidth(i, colunas[i])

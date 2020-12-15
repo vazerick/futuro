@@ -8,15 +8,15 @@ from PyQt5.QtWidgets import QTableWidgetItem
 
 class Tabela:
 
-    def __init__(self, widget, item, entrada, previsao, estoque, ferias, fundo, mes, dif):
+    def __init__(self, widget, item, entrada, previsao, estoque, ferias, fundo, mes, dif, corte):
 
         self.widget = widget
         self.labelFundo = fundo.setText
         self.labelMes = mes.setText
         self.labelDif = dif.setText
-        self.atualiza(item, entrada, previsao, estoque, ferias)
+        self.atualiza(item, entrada, previsao, estoque, ferias, corte)
 
-    def atualiza(self, item, entrada, previsao, estoque, ferias):
+    def atualiza(self, item, entrada, previsao, estoque, ferias, corte):
         #limpa a tabela
         self.widget.clear()
         self.widget.setRowCount(0)
@@ -149,11 +149,12 @@ class Tabela:
 
         for index, row in tabela.iterrows():
             font = QFont()
-            if row["prev"] < datetime.today() + timedelta(days=30):
+            if row["prev"] < datetime.today() + timedelta(days=corte):
                 temp = item[item["nome"] == row["nome"]]
                 id_item =temp.index.item()
                 quantia_estoque = estoque[estoque["item"] == id_item]
                 fator_estoque = row["fator_estoque"]
+                fator_estoque = fator_estoque*(corte/30)
                 if len(quantia_estoque) > 0:
                     quantia_estoque = quantia_estoque["quantia"].item()
                 else:

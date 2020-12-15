@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from os import path, mkdir
 
 from pandas import isna
@@ -21,7 +21,7 @@ def atualizar():
     Estoque.atualizar()
     Ferias.atualizar()
     Previsao.atualizar(Entrada.tabela, Item.tabela, Ferias.tabela)
-    Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, Ferias.tabela)
+    Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, Ferias.tabela, corte)
     Arvore.atualiza(Ferias.tabela)
     gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)
     temp = selecionado
@@ -464,11 +464,41 @@ def botao_estoque():
 def seleciona_modo():
     global modo
     modo = gui.ui.modoComboBox.currentIndex()
-    with open("data/config.ini", "w") as arquivo:
-        arquivo.write(str(modo))
-        arquivo.close()
     Previsao.modo = modo
+    grava_config()
     atualizar()
+
+
+def corte_atualiza():
+    gui.ui.botaoCorte.setEnabled(True)
+    gui.ui.botaoFim.setEnabled(True)
+
+
+def botao_corte():
+    global corte
+    corte = gui.ui.corteSpin.value()
+    grava_config()
+    atualizar()
+    gui.ui.botaoCorte.setEnabled(False)
+
+
+def botao_fim():
+    global corte
+    hoje = datetime.today()
+    next_month = hoje.replace(day=28) + timedelta(days=4)
+    last_day_of_month = next_month - timedelta(days=next_month.day)
+    delta = last_day_of_month - hoje
+    dias = delta.days
+    corte = dias
+    gui.ui.corteSpin.setValue(dias)
+    atualizar()
+    gui.ui.botaoFim.setEnabled(False)
+
+
+def grava_config():
+    with open("data/config.ini", "w") as arquivo:
+        arquivo.write(str(modo)+";"+str(corte))
+        arquivo.close()
 
 
 def ultima_entrada(item):
@@ -622,22 +652,30 @@ def selecionado_widget(estado):
 gui = Gui()
 
 gui.uiHistorico.botaoExcluir.hide()
+gui.ui.botaoCorte.setEnabled(False)
 
 modo = 0
+corte = 30
 
 if not path.exists("data"):
     mkdir("data")
 
 try:
     with open("data/config.ini", "r") as arquivo:
-        modo = int(arquivo.read())
+        config = arquivo.read()
+        config = config.split(";")
+        modo = int(config[0])
+        corte = int(config[1])
+        # modo = int(arquivo.read())
+        print(modo, corte)
         arquivo.close()
 except FileNotFoundError:
     with open("data/config.ini", "w") as arquivo:
-        arquivo.write("0")
+        arquivo.write("0;30")
         arquivo.close()
 
 gui.ui.modoComboBox.setCurrentIndex(modo)
+gui.ui.corteSpin.setValue(corte)
 
 selecionado_widget(False)
 
@@ -657,7 +695,7 @@ Ferias = Dados("ferias",
 Previsao = Previsao(Item.tabela, Entrada.tabela, Ferias.tabela, modo)
 
 Tabela = Tabela(gui.ui.tableWidget, Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, Ferias.tabela,
-                gui.ui.labelFundo, gui.ui.labelMes, gui.ui.labelDif)
+                gui.ui.labelFundo, gui.ui.labelMes, gui.ui.labelDif, corte)
 TabelaPlanejar = TabelaPlanejar(
     gui.uiPlanejar.tabelaEstoque, gui.uiPlanejar.tabelaPlanejamento, gui.uiPlanejar.labelUltimo,
     gui.uiPlanejar.labelPrimeiro, gui.uiPlanejar.labelIntervalo
@@ -679,6 +717,8 @@ gui.ui.botaoEstoque.clicked.connect(botao_estoque)
 gui.ui.botaoFerias.clicked.connect(botao_ferias)
 gui.ui.botaoComparar.clicked.connect(botao_comparar)
 gui.ui.botaoPlanejar.clicked.connect(botao_planejar)
+gui.ui.botaoCorte.clicked.connect(botao_corte)
+gui.ui.botaoFim.clicked.connect(botao_fim)
 gui.uiPlanejar.botaoProximo1.clicked.connect(botao_proximo1)
 gui.uiPlanejar.botaoProximo2.clicked.connect(botao_proximo2)
 gui.uiPlanejar.botaoAnterior1.clicked.connect(botao_anterior1)
@@ -699,5 +739,6 @@ gui.uiComparar.unidadeNovoDoubleSpinBox.valueChanged.connect(calculo_comparar)
 gui.uiComparar.valorNovoDoubleSpinBox.valueChanged.connect(calculo_comparar)
 gui.uiPlanejar.tabelaEstoque.cellChanged.connect(tabela_estoque_edita)
 gui.uiPlanejar.tabelaPlanejamento.cellChanged.connect(tabela_planejamento_edita)
+gui.ui.corteSpin.valueChanged.connect(corte_atualiza)
 
 sys.exit(gui.app.exec_())
