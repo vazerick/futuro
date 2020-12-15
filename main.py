@@ -241,6 +241,21 @@ def excluir_aceitar():
     atualizar()
 
 
+def botao_pausa():
+    global selecionado
+    limpar_texto(
+        gui.uiPausa.labelNome,
+    )
+    if selecionado >= 0:
+        item = gui.ui.tableWidget.item(selecionado, 0).text()
+        ultimo = gui.ui.tableWidget.item(selecionado, 1).text()
+        if ultimo != "Sem entrada" and ultimo != "Pausa":
+            item = Item.tabela[Item.tabela["nome"] == item]
+            nome = item["nome"].item()
+            gui.uiPausa.labelNome.setText(nome)
+            gui.wPausa.show()
+    gui.uiPausa.dataDateEdit.setDate(datetime.now())
+
 def botao_feito():
     global selecionado
     limpar_texto(
@@ -295,6 +310,25 @@ def botao_feito():
             gui.uiEntrada.quantiaSpinBox.setEnabled(False)
         gui.uiEntrada.dataDateEdit.setDate(datetime.now())
         gui.wEntrada.show()
+
+
+def pausa_aceitar():
+    global selecionado
+    item = gui.ui.tableWidget.item(selecionado, 0).text()
+    linha = Item.tabela[Item.tabela["nome"] == item]
+    item = linha.index.values[0]
+    data = gui.uiPausa.dataDateEdit.date().toString("dd/MM/yy")
+    quantia = 0
+    unidade = 1
+
+    Entrada.adicionar([
+        item,
+        quantia,
+        unidade,
+        data
+    ])
+
+    atualizar()
 
 
 def entrada_aceitar():
@@ -386,10 +420,15 @@ def tabela_seleciona(item):
         gui.ui.spinBox.setValue(estoque)
 
         if len(info):
+
             info = info[info["data"] == ultimo]
 
-            vezes = info["quantia"].item()
-            unidades = info["unidade"].item()
+            if len(info):
+                vezes = info["quantia"].item()
+                unidades = info["unidade"].item()
+            else:
+                vezes = 0
+                unidades = None
 
             if vezes > 1:
                 vezes = " " + str(vezes) + " x"
@@ -418,7 +457,15 @@ def tabela_seleciona(item):
             data_prox = datetime.strptime(prox, "%d/%m/%y")
             entradas = entradas + [(hoje-data_ultimo).days]
             dias = (data_prox-data_ultimo).days
+
             gui.ui.graficoBarra_2.plot(dias, entradas)
+        elif ultimo == "Pausa":
+            gui.ui.labelUltimo.setText(ultimo)
+
+            entradas = Previsao.previsao[Previsao.previsao["item"] == item]
+            entradas = list(entradas["dias"])
+            gui.ui.graficoBarra_2.limpa()
+            gui.ui.graficoBarra_2.plot(0, entradas)
         else:
             gui.ui.labelUltimo.setText(ultimo)
             gui.ui.graficoBarra_2.limpa()
@@ -505,6 +552,8 @@ def ultima_entrada(item):
     id_item = item.index.item()
     entrada = Entrada.tabela[Entrada.tabela["item"] == id_item].copy()
     if len(entrada):
+
+        entrada = entrada[entrada["quantia"]>0]
         entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
 
         ultimo = entrada["data"].max()
@@ -646,7 +695,23 @@ def selecionado_widget(estado):
     gui.ui.selecionadoFrame.setEnabled(estado)
     gui.ui.botaoEstoque.setEnabled(estado)
     gui.ui.botaoFeito.setEnabled(estado)
+    gui.ui.botaoPausa.setEnabled(estado)
     gui.ui.spinBox.setEnabled(estado)
+
+
+def data_feito():
+    data = gui.uiEntrada.dataDateEdit.date().toPyDate()
+    if data > datetime.now().date():
+        gui.uiEntrada.dataDateEdit.setDate(datetime.now())
+
+
+def spin_feito():
+    unidade = gui.uiEntrada.unidadeDoubleSpinBox.value()
+    quantia = gui.uiEntrada.quantiaSpinBox.value()
+    if unidade <= 0:
+        gui.uiEntrada.unidadeDoubleSpinBox.setValue(0.01)
+    if quantia <= 0:
+        gui.uiEntrada.quantiaSpinBox.setValue(1)
 
 
 gui = Gui()
@@ -711,6 +776,7 @@ gui.ajusta()
 gui.ui.botaoAdicionar.clicked.connect(botao_add)
 gui.ui.botaoEditar.clicked.connect(botao_editar)
 gui.ui.botaoFeito.clicked.connect(botao_feito)
+gui.ui.botaoPausa.clicked.connect(botao_pausa)
 gui.ui.botaoExcluir.clicked.connect(botao_excluir)
 gui.ui.botaoHistorico.clicked.connect(botao_historico)
 gui.ui.botaoEstoque.clicked.connect(botao_estoque)
@@ -725,6 +791,7 @@ gui.uiPlanejar.botaoAnterior1.clicked.connect(botao_anterior1)
 gui.uiPlanejar.botaoAnterior2.clicked.connect(botao_anterior2)
 gui.uiAdd.buttonBox.accepted.connect(add_aceitar)
 gui.uiEntrada.buttonBox.accepted.connect(entrada_aceitar)
+gui.uiPausa.buttonBox.accepted.connect(pausa_aceitar)
 gui.uiEditar.buttonBox.accepted.connect(editar_aceitar)
 gui.uiExcluir.buttonBox.accepted.connect(excluir_aceitar)
 gui.uiHistorico.buttonBox.accepted.connect(historico_aceitar)
@@ -740,5 +807,8 @@ gui.uiComparar.valorNovoDoubleSpinBox.valueChanged.connect(calculo_comparar)
 gui.uiPlanejar.tabelaEstoque.cellChanged.connect(tabela_estoque_edita)
 gui.uiPlanejar.tabelaPlanejamento.cellChanged.connect(tabela_planejamento_edita)
 gui.ui.corteSpin.valueChanged.connect(corte_atualiza)
+gui.uiEntrada.quantiaSpinBox.valueChanged.connect(spin_feito)
+gui.uiEntrada.unidadeDoubleSpinBox.valueChanged.connect(spin_feito)
+gui.uiEntrada.dataDateEdit.dateChanged.connect(data_feito)
 
 sys.exit(gui.app.exec_())

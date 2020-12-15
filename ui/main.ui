@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1014</width>
-    <height>622</height>
+    <height>657</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -150,7 +150,7 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_9">
+     <layout class="QHBoxLayout" name="horizontalLayout_10">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
@@ -445,11 +445,22 @@
          </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="botaoFeito">
-          <property name="text">
-           <string>Feito!</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QPushButton" name="botaoPausa">
+            <property name="text">
+             <string>Pausar</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="botaoFeito">
+            <property name="text">
+             <string>Feito!</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>

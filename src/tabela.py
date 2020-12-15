@@ -39,6 +39,7 @@ class Tabela:
             ferias["dias"] = ferias.apply(lambda row: row["fim"] - row["inicio"], axis=1)
             ferias["dias"] = ferias.apply(lambda row: row["dias"].days, axis=1)
 
+        em_pausa = pd.DataFrame(columns=colunas)
         sem_prev = pd.DataFrame(columns=colunas)
         sem_entr = pd.DataFrame(columns=colunas)
 
@@ -71,6 +72,19 @@ class Tabela:
                     ]
                     self.widget.insertRow(0)
                     sem_prev = sem_prev.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
+                elif vezes == 0:
+                    linha = [
+                        nome,
+                        "Pausa",
+                        "Sem previsão",
+                        valor,
+                        mensal_int,
+                        mensal,
+                        fator_estoque,
+                        flag
+                    ]
+                    self.widget.insertRow(0)
+                    em_pausa = em_pausa.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
                 else:
                     tempo = round(vezes*freq)
                     if tempo == 0:
@@ -204,6 +218,19 @@ class Tabela:
                 item = QTableWidgetItem(row[nome])
                 self.widget.setItem(linha, i, item)
             linha += 1
+
+        for index, row in em_pausa.iterrows():
+            for i, nome in [
+                [0, "nome"],
+                [1, "ultimo"],
+                [2, "prev"],
+                [3, "valor"],
+                [4, "mensal"]
+            ]:
+                item = QTableWidgetItem(row[nome])
+                self.widget.setItem(linha, i, item)
+            linha += 1
+
         fundo = tabela["mensal_int"].sum()
         mes = round(mes/5, 0)*5
         dif = fundo - mes

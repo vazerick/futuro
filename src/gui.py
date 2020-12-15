@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMainWindow, QDialog
 
 from ui.entrada import Ui_Dialog as Entrada
+from ui.pausa import Ui_Dialog as Pausa
 from ui.excluir import Ui_Dialog as Excluir
 from ui.férias import Ui_Dialog as Ferias
 from ui.historico import Ui_Dialog as Historico
@@ -12,7 +13,6 @@ from ui.item import Ui_Dialog as Item
 from ui.comparar import Ui_Dialog as Comparar
 from ui.planejar import Ui_Dialog as Planejar
 from ui.main import Ui_MainWindow as Main
-
 
 class Gui:
 
@@ -39,6 +39,10 @@ class Gui:
         self.wEntrada = QDialog()
         self.uiEntrada = Entrada()
         self.uiEntrada.setupUi(self.wEntrada)
+
+        self.wPausa = QDialog()
+        self.uiPausa = Pausa()
+        self.uiPausa.setupUi(self.wPausa)
 
         self.wExcluir = QDialog()
         self.uiExcluir = Excluir()
@@ -70,7 +74,8 @@ class Gui:
             self.wHistorico,
             self.wFerias,
             self.wComparar,
-            self.wPlanejar
+            self.wPlanejar,
+            self.wPausa
         ]:
             janela.setWindowModality(Qt.ApplicationModal)       
 

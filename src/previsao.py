@@ -50,10 +50,12 @@ class Previsao:
                 # calcula o fator entre dias/(quantia*unidade) e corta os valores nulos
                 entradas["dias"] = entradas.apply(lambda row: row["dias"] - row["ferias"], axis=1)
                 entradas["vezes"] = entradas.apply(lambda row: row["quantia"] * row["unidade"], axis=1)
-                entradas["fator"] = entradas.apply(lambda row: row["dias"] / row["vezes"], axis=1)
+                entradas["fator"] = entradas.apply(lambda row: row["dias"] / row["vezes"] if row["vezes"] > 0 else 0, axis=1)
                 entradas = entradas.sort_values(by=["data"], ascending=True)
-                self.previsao = self.previsao.append(entradas[entradas["dias"] > 0][["item", "dias"]])
-
+                previsao = entradas.copy()
+                previsao = previsao[previsao["dias"] > 0]
+                previsao = previsao[previsao["fator"] > 0]
+                self.previsao = self.previsao.append(previsao[["item", "dias"]])
                 if self.modo == 3 and len(entradas) > 0:
                     entradas["peso"] = list(range(1, len(entradas)))+[0]
                     total = entradas["peso"].sum()
@@ -64,6 +66,8 @@ class Previsao:
                             [[index, entradas.sum()/total]],
                             columns=self.colunas
                         )
+                        if index == 8:
+                            print(linha)
                     else:
                         linha = pd.DataFrame(
                             [[index, None]],

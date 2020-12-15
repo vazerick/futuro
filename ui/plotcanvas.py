@@ -31,15 +31,21 @@ class PlotBarra(FigureCanvas):
         else:
             ref = frequencia
         tick = round(ref / 4)
-        yticks = [0, tick, tick * 2, tick * 3, tick * 4]
 
-        erro = (1-ref/(tick*4))*100
-        erro = abs(erro)
+        if tick > 0:
+            yticks = [0, tick, tick * 2, tick * 3, tick * 4]
 
-        count = 4
-        while tick * count < max(historico):
-            yticks.append(tick * count)
-            count += 1
+            erro = (1-ref/(tick*4))*100
+            erro = abs(erro)
+
+            count = 4
+            while tick * count < max(historico):
+                yticks.append(tick * count)
+                count += 1
+
+        else:
+            erro = 0
+            yticks = [1, 2, 3, 4]
 
         if max(yticks) > 20:
             for i in range(0, len(yticks)):
@@ -50,7 +56,6 @@ class PlotBarra(FigureCanvas):
 
         self.ax.set_yticks(yticks, minor=False)
         self.ax.yaxis.grid(True, which='major', linewidth=0.5)
-
 
         step = round(len(historico)/10)
         if not step:
@@ -63,8 +68,9 @@ class PlotBarra(FigureCanvas):
         cores[-1] = "#003C30"
         barras = self.ax.bar(range(1, len(historico)+1), historico, color=cores)
         media = frequencia
-        self.ax.set_facecolor("#F5CBF5")
-        self.ax.axhline(y=media, zorder=0, color="#BF812D", linewidth=2.5)
+        if media > 0:
+            self.ax.set_facecolor("#F5CBF5")
+            self.ax.axhline(y=media, zorder=0, color="#BF812D", linewidth=2.5)
 
         if len(self.titulo):
             self.ax.set_title(self.titulo)
