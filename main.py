@@ -15,6 +15,7 @@ from src.tabela import Tabela, TabelaHistorico, TabelaPlanejar
 selecionado = -1
 
 def atualizar():
+    timer_start("Atualizar")
     gui.ui.tableWidget.currentItemChanged.disconnect()
     gui.ui.graficoBarra_2.limpa()
     Entrada.atualizar()
@@ -32,6 +33,7 @@ def atualizar():
         gui.ui.tableWidget.setCurrentCell(temp, 0)
     else:
         selecionado_widget(False)
+    timer_fim("Atualizar")
 
 
 def limpar_texto(*arg):
@@ -717,6 +719,7 @@ def spin_feito():
 
 
 def procurar():
+    timer_start("Procurar")
     busca = gui.ui.lineProcurar.text()
     selecao = Item.tabela[Item.tabela["nome"].str.contains(busca, regex=False, case=False)]
     if len(selecao) > 0:
@@ -724,6 +727,7 @@ def procurar():
         item = gui.ui.tableWidget.findItems(selecao, Qt.MatchContains)
         if len(item) > 0:
             gui.ui.tableWidget.setCurrentItem(item[0])
+    timer_fim("Procurar")
 
 
 def completer():
