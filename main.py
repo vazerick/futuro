@@ -101,13 +101,14 @@ def editar_aceitar():
     nome = nome.capitalize()
 
     if len(nome) > 1:
-
+        timer_start("Editar item")
         valor = gui.uiEditar.valorDoubleSpinBox.value()
         unidade = gui.uiEditar.unidadeLineEdit.text()
         contavel = int(bool(gui.uiEditar.contCheckBox.checkState()))
         mensuravel = int(bool(gui.uiEditar.mensCheckBox.checkState()))
         pausa = int(bool(gui.uiEditar.pausaCheckBox.checkState()))
         Item.editar(item.index.item(), [nome, pausa, valor, contavel, mensuravel, unidade])
+        timer_fim("Editar item")
         atualizar()
 
 
@@ -204,6 +205,7 @@ def tabela_estoque_edita(linha, coluna):
 
 
 def historico_aceitar():
+    timer_start("Editar histórico")
     global Entrada
     itens = []
     for i in range(0, gui.uiHistorico.tableWidget.rowCount()):
@@ -228,10 +230,12 @@ def historico_aceitar():
     Entrada = Dados("entrada",
                     ['item', 'quantia', 'unidade', 'data']
                     )
+    timer_fim("Editar histórico")
     atualizar()
 
 
 def excluir_aceitar():
+    timer_start("Excluir item")
     global selecionado
     item = gui.ui.tableWidget.item(selecionado, 0).text()
     item = Item.tabela[Item.tabela["nome"] == item]
@@ -242,6 +246,7 @@ def excluir_aceitar():
         Entrada.excluir(i)
     Item.excluir(id_selecionado)
     selecionado = 0
+    timer_fim("Excluir item")
     atualizar()
 
 
@@ -337,6 +342,7 @@ def pausa_aceitar():
 
 def entrada_aceitar():
     global selecionado
+    timer_start("Entrada em um item")
     item = gui.ui.tableWidget.item(selecionado, 0).text()
     linha = Item.tabela[Item.tabela["nome"] == item]
     valor_antigo = linha["valor"].values[0]
@@ -373,7 +379,7 @@ def entrada_aceitar():
     if len(estoque) > 0:
         id_estoque = (estoque.index.item())
         Estoque.reduz_estoque(id_estoque)
-
+    timer_fim("Entrada em um item")
     atualizar()
 
 
@@ -514,9 +520,11 @@ def botao_estoque():
 
 def seleciona_modo():
     global modo
+    timer_start("Alterar cálculo de média")
     modo = gui.ui.modoComboBox.currentIndex()
     Previsao.modo = modo
     grava_config()
+    timer_fim("Alterar cálculo de média")
     atualizar()
 
 
@@ -527,14 +535,17 @@ def corte_atualiza():
 
 def botao_corte():
     global corte
+    timer_start("Mudar o corte")
     corte = gui.ui.corteSpin.value()
     grava_config()
+    timer_fim("Mudar o corte")
     atualizar()
     gui.ui.botaoCorte.setEnabled(False)
 
 
 def botao_fim():
     global corte
+    timer_start("Corte no fim do mês")
     hoje = datetime.today()
     next_month = hoje.replace(day=28) + timedelta(days=4)
     last_day_of_month = next_month - timedelta(days=next_month.day)
@@ -542,6 +553,7 @@ def botao_fim():
     dias = delta.days
     corte = dias
     gui.ui.corteSpin.setValue(dias)
+    timer_fim("Corte no fim do mês")
     atualizar()
     gui.ui.botaoFim.setEnabled(False)
 
@@ -686,9 +698,11 @@ def ferias_adicionar():
     inicio = gui.uiFerias.inicioDateEdit.date()
     fim = gui.uiFerias.fimDateEdit.date()
     if fim > inicio:
+        timer_start("Adicionar férias")
         inicio = inicio.toString("dd/MM/yy")
         fim = fim.toString("dd/MM/yy")
         Ferias.adicionar([inicio, fim])
+        timer_fim("Adicionar férias")
         atualizar()
     else:
         print("não ok")
