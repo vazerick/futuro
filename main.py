@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 from os import path, mkdir
 
 from pandas import isna
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QCompleter
 
 from src.arvore import Arvore, ArvorePlanejar
 from src.dados import Dados
@@ -11,7 +13,6 @@ from src.previsao import Previsao
 from src.tabela import Tabela, TabelaHistorico, TabelaPlanejar
 
 selecionado = -1
-
 
 def atualizar():
     gui.ui.tableWidget.currentItemChanged.disconnect()
@@ -23,6 +24,7 @@ def atualizar():
     Previsao.atualizar(Entrada.tabela, Item.tabela, Ferias.tabela)
     Tabela.atualiza(Item.tabela, Entrada.tabela, Previsao.tabela, Estoque.tabela, Ferias.tabela, corte)
     Arvore.atualiza(Ferias.tabela)
+    completer()
     gui.ui.tableWidget.currentItemChanged.connect(tabela_seleciona)
     temp = selecionado
     if temp >= 0:
@@ -714,6 +716,39 @@ def spin_feito():
         gui.uiEntrada.quantiaSpinBox.setValue(1)
 
 
+def procurar():
+    busca = gui.ui.lineProcurar.text()
+    selecao = Item.tabela[Item.tabela["nome"].str.contains(busca, regex=False, case=False)]
+    if len(selecao) > 0:
+        selecao = selecao["nome"].iloc[0]
+        item = gui.ui.tableWidget.findItems(selecao, Qt.MatchContains)
+        if len(item) > 0:
+            gui.ui.tableWidget.setCurrentItem(item[0])
+
+
+def completer():
+    dados = Item.tabela["nome"].copy()
+    dados = dados.sort_values()
+    completer = QCompleter(dados.str.title().unique())
+    completer.setCaseSensitivity(Qt.CaseInsensitive)
+    gui.ui.lineProcurar.setCompleter(completer)
+
+
+def timer_start(mensagem):
+    global tempo_inicial
+    tempo_inicial = datetime.now()
+    print(mensagem)
+
+
+def timer_fim(mensagem):
+    global tempo_inicial
+    tempo_final = datetime.now()
+    delta = tempo_final - tempo_inicial
+    print(mensagem + ": ", delta)
+    tempo_inicial = 0
+
+
+timer_start("Inicialização")
 gui = Gui()
 
 gui.uiHistorico.botaoExcluir.hide()
@@ -771,6 +806,9 @@ ArvorePlanejar = ArvorePlanejar(gui.uiPlanejar.treeWidget)
 
 Historico = TabelaHistorico(gui.uiHistorico.tableWidget)
 
+completer()
+
+
 gui.ajusta()
 #definições dos botões
 gui.ui.botaoAdicionar.clicked.connect(botao_add)
@@ -810,5 +848,8 @@ gui.ui.corteSpin.valueChanged.connect(corte_atualiza)
 gui.uiEntrada.quantiaSpinBox.valueChanged.connect(spin_feito)
 gui.uiEntrada.unidadeDoubleSpinBox.valueChanged.connect(spin_feito)
 gui.uiEntrada.dataDateEdit.dateChanged.connect(data_feito)
+gui.ui.lineProcurar.textChanged.connect(procurar)
+
+timer_fim("Inicialização")
 
 sys.exit(gui.app.exec_())

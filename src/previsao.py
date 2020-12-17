@@ -66,8 +66,6 @@ class Previsao:
                             [[index, entradas.sum()/total]],
                             columns=self.colunas
                         )
-                        if index == 8:
-                            print(linha)
                     else:
                         linha = pd.DataFrame(
                             [[index, None]],

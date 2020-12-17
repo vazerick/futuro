@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.Qt import QFont
-from PyQt5.QtWidgets import QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidgetItem, QAbstractItemView
 
 
 class Tabela:
@@ -238,6 +238,8 @@ class Tabela:
         self.labelMes("Próximos gastos: " + "R${:.2f}".format(mes).replace(".", ","))
         self.labelDif("Diferença: " + "R${:.2f}".format(dif).replace(".", ","))
         # self.labelMes(str(mes))
+        self.widget.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.widget.setSortingEnabled(True)
         self.tabela = tabela
 
 
