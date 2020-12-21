@@ -37,6 +37,7 @@ class Ui_Dialog(object):
         self.label.setObjectName("label")
         self.horizontalLayout_5.addWidget(self.label)
         self.valorDoubleSpinBox = QtWidgets.QDoubleSpinBox(Dialog)
+        self.valorDoubleSpinBox.setMaximum(999.99)
         self.valorDoubleSpinBox.setObjectName("valorDoubleSpinBox")
         self.horizontalLayout_5.addWidget(self.valorDoubleSpinBox)
         self.verticalLayout.addLayout(self.horizontalLayout_5)

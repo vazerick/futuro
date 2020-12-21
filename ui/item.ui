@@ -58,7 +58,11 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="valorDoubleSpinBox"/>
+      <widget class="QDoubleSpinBox" name="valorDoubleSpinBox">
+       <property name="maximum">
+        <double>999.990000000000009</double>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
