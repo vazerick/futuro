@@ -1,5 +1,5 @@
 from datetime import timedelta, datetime
-
+from math import floor
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.Qt import QFont
@@ -177,7 +177,7 @@ class Tabela:
                     font.setBold(True)
                     valor = float(row["valor"].replace("R$", "").replace(",", "."))
                     if fator_estoque > 1:
-                        valor = valor * (fator_estoque - quantia_estoque)
+                        valor = valor * floor(fator_estoque - quantia_estoque)
                     mes = mes + valor
             else:
                 font.setBold(False)
