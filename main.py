@@ -1,6 +1,7 @@
 import sys
 from datetime import datetime, timedelta
 from os import path, mkdir
+from math import ceil
 
 from pandas import isna
 from PyQt5.QtCore import Qt
@@ -467,6 +468,31 @@ def tabela_seleciona(item):
             data_prox = datetime.strptime(prox, "%d/%m/%y")
             entradas = entradas + [(hoje-data_ultimo).days]
             dias = (data_prox-data_ultimo).days
+
+            # print("Dias:", dias)
+
+            # falta = "Falta " + str(dias)
+            #
+            # gui.ui.labelEstoque.setText(falta)
+            # foo = Previsao.tabela[Previsao.tabela["item"] == item]
+
+            media = Tabela.tabela_dias[Tabela.tabela_dias["item"] == item]["dias"].item()
+            corte = gui.ui.corteSpin.value()
+            janela = hoje + timedelta(days=corte)
+            dias_necessarios = (janela-data_prox).days
+            dias_estoque = estoque * media
+
+            dias_falta = dias_necessarios-dias_estoque
+
+            if dias_falta > 0:
+                quant = ceil(dias_falta/media)
+                mensagem = "Falta " + str(quant) + ". Dias sem: " + str(dias_falta) + "."
+            elif estoque > 0:
+                fim = data_prox + timedelta(days=dias_estoque)
+                mensagem = "Suficiente até " + fim.strftime("%d/%m/%y")
+            else:
+                mensagem = ""
+            gui.ui.labelEstoque.setText(mensagem)
 
             gui.ui.graficoBarra_2.plot(dias, entradas)
         elif ultimo == "Pausa":

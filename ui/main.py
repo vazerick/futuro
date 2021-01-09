@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1014, 657)
+        MainWindow.resize(1014, 689)
         MainWindow.setStyleSheet("")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -186,6 +186,9 @@ class Ui_MainWindow(object):
         self.horizontalLayout_4.addWidget(self.botaoEstoque)
         spacerItem7 = QtWidgets.QSpacerItem(157, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem7)
+        self.labelEstoque = QtWidgets.QLabel(self.groupBox)
+        self.labelEstoque.setObjectName("labelEstoque")
+        self.horizontalLayout_4.addWidget(self.labelEstoque)
         self.verticalLayout_3.addWidget(self.groupBox)
         self.horizontalLayout_13 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_13.setObjectName("horizontalLayout_13")
@@ -258,6 +261,7 @@ class Ui_MainWindow(object):
         self.groupUltimo.setTitle(_translate("MainWindow", "Último"))
         self.groupBox.setTitle(_translate("MainWindow", "Estoque"))
         self.botaoEstoque.setText(_translate("MainWindow", "Atualizar"))
+        self.labelEstoque.setText(_translate("MainWindow", " "))
         self.botaoPausa.setText(_translate("MainWindow", "Pausar"))
         self.botaoFeito.setText(_translate("MainWindow", "Feito!"))
 from ui.plotcanvas import PlotBarra

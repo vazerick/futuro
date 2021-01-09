@@ -1,5 +1,5 @@
 from datetime import timedelta, datetime
-from math import floor
+from math import floor, ceil
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.Qt import QFont
@@ -32,6 +32,7 @@ class Tabela:
         entrada = entrada.copy()
         entrada["data"] = entrada["data"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
         tabela = pd.DataFrame(columns=colunas)
+        tabela_dias = pd.DataFrame(columns=["item", "dias"])
         ferias = ferias.copy()
         if len(ferias) > 0:
             ferias["inicio"] = ferias["inicio"].apply(lambda row: datetime.strptime(row, "%d/%m/%y"))
@@ -129,9 +130,13 @@ class Tabela:
                         fator_estoque,
                         flag
                     ]
-
+                    linha_prev = [
+                        index,
+                        tempo
+                    ]
                     self.widget.insertRow(0)
                     tabela = tabela.append(pd.DataFrame([linha], columns=colunas), ignore_index=True, sort=False)
+                    tabela_dias = tabela_dias.append(pd.DataFrame([linha_prev], columns=["item", "dias"]), ignore_index=True, sort=False)
                     mensal_int = 0
                     mensal = ""
             else:
@@ -156,6 +161,8 @@ class Tabela:
 
         tabela = tabela.sort_values(by=["prev"])
 
+        self.tabela_dias = tabela_dias
+
         sem_prev = sem_prev.sort_values(by=["ultimo"])
         sem_prev["ultimo"] = sem_prev["ultimo"].apply(lambda row: datetime.strftime(row, "%d/%m/%y"))
 
@@ -167,12 +174,22 @@ class Tabela:
                 temp = item[item["nome"] == row["nome"]]
                 id_item =temp.index.item()
                 quantia_estoque = estoque[estoque["item"] == id_item]
-                fator_estoque = row["fator_estoque"]
-                fator_estoque = fator_estoque*(corte/30)
+                fator_estoque = (row["fator_estoque"])
+
+                fator_estoque = floor(fator_estoque*10)/10
+
+                if fator_estoque > 1:
+                    fator_estoque = fator_estoque * (corte / 30)
+
+                fator_estoque = floor(fator_estoque * 10) / 10
+
                 if len(quantia_estoque) > 0:
                     quantia_estoque = quantia_estoque["quantia"].item()
                 else:
                     quantia_estoque = 0
+                print(row["nome"])
+                print(quantia_estoque)
+                print("Fator:", fator_estoque)
                 if quantia_estoque < fator_estoque and not (row["flag"]):
                     font.setBold(True)
                     valor = float(row["valor"].replace("R$", "").replace(",", "."))
