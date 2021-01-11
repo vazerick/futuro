@@ -455,7 +455,7 @@ def tabela_seleciona(item):
                 unidades = " " + unidades + unidade
 
         prox = gui.ui.tableWidget.item(linha, 2).text()
-
+        gui.ui.labelEstoque.setText("")
         if prox != "Sem previsão":
             data_ultimo = datetime.strptime(ultimo, "%d/%m/%y")
             ultimo = ultimo + "\t" + vezes + unidades
