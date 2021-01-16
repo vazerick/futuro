@@ -57,8 +57,10 @@ class Previsao:
                 previsao = previsao[previsao["fator"] > 0]
                 self.previsao = self.previsao.append(previsao[["item", "dias"]])
                 if self.modo == 3 and len(entradas) > 0:
+                    entradas = entradas[entradas["vezes"] > 0]
                     entradas["peso"] = list(range(1, len(entradas)))+[0]
                     total = entradas["peso"].sum()
+                    # entradas["peso"] = entradas.apply(lambda : int(bool(row["vezes"])) * row["peso"])
                     entradas["fator"] = entradas.apply(lambda row: row["peso"] * row["fator"], axis=1)
                     entradas = entradas[entradas["fator"] > 0]["fator"]
                     if total > 0:
